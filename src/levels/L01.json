@@ -1,0 +1,28 @@
+﻿{
+  "id": "L01",
+  "title": "分光入门",
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    { "id": "l01-source", "type": "SOURCE", "x": 1, "y": 6, "dir": 0, "color": 7, "intensity": 300, "locked": true },
+    { "id": "l01-prism", "type": "PRISM", "x": 3, "y": 6, "dir": 0, "locked": true },
+    { "id": "l01-mirror", "type": "MIRROR", "x": 1, "y": 1, "dir": 0, "locked": true },
+    { "id": "l01-r", "type": "RECV_R", "x": 8, "y": 1, "dir": 0, "threshold": 100, "locked": true },
+    { "id": "l01-g", "type": "RECV_G", "x": 6, "y": 2, "dir": 0, "threshold": 100, "locked": true },
+    { "id": "l01-b", "type": "RECV_B", "x": 8, "y": 11, "dir": 0, "threshold": 100, "locked": true }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 2 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 256
+  }
+}

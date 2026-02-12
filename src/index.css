@@ -1,0 +1,27 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  #root {
+    min-height: 100vh;
+  }
+}
+
+@layer components {
+  .panel {
+    @apply rounded-panel bg-panel shadow-soft;
+  }
+
+  .app-button {
+    @apply rounded-button border border-white/10 bg-panel2 px-3 py-2 text-sm text-text transition-colors;
+  }
+
+  .app-button:hover {
+    @apply border-white/20 bg-white/10;
+  }
+
+  .app-button:disabled {
+    @apply cursor-not-allowed opacity-40;
+  }
+}
