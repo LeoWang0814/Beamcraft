@@ -27,6 +27,7 @@
 
 ## 编辑与交互（必须实现）
 - 放置：工具栏选择后点击格子放置。
+- 构建位：部分关卡使用 `buildPads` 限制放置区域，减少无效试错。
 - 旋转：`R` 顺时针 45°，`Shift+R` 逆时针 45°（选中元件时）。
 - 删除：`Delete/Backspace` 删除选中元件。
 - 撤销重做：`Ctrl+Z/Ctrl+Y`，至少覆盖放置/旋转/删除。
@@ -44,15 +45,16 @@
 - 圆角：面板 12px，按钮 10px，网格单元 8px。
 - 阴影：统一轻阴影（两层低透明）。
 - 色板（CSS Variables / Tailwind theme）：
-  - `bg #0F1115`
-  - `panel #161A22`
-  - `panel2 #1C2230`
-  - `text #E8ECF4`
-  - `muted #A7B0C3`
-  - `accent #7AA2F7`
-  - `rayR #FF4D6D`
-  - `rayG #3DFF8A`
-  - `rayB #4D7CFF`
+  - `bg #0C1118`
+  - `panel #131B27`
+  - `panel2 #1A2432`
+  - `panel3 #223044`
+  - `text #EDF3FF`
+  - `muted #99A8C2`
+  - `accent #5EA5FF`
+  - `rayR #FF5D75`
+  - `rayG #5AF594`
+  - `rayB #5F87FF`
 - SVG 统一规范：
   - `viewBox="0 0 64 64"`
   - `stroke-width="2"`

@@ -9,19 +9,220 @@
 }
 
 @layer components {
-  .panel {
-    @apply rounded-panel bg-panel shadow-soft;
+  .app-shell {
+    animation: app-appear 220ms ease-out;
   }
 
-  .app-button {
-    @apply rounded-button border border-white/10 bg-panel2 px-3 py-2 text-sm text-text transition-colors;
+  .panel-surface {
+    @apply rounded-panel border shadow-lift;
+    border-color: var(--line-soft);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 35%), var(--surface-soft);
+    backdrop-filter: blur(4px);
   }
 
-  .app-button:hover {
-    @apply border-white/20 bg-white/10;
+  .eyebrow {
+    @apply text-[11px] uppercase tracking-[0.18em] text-muted;
   }
 
-  .app-button:disabled {
-    @apply cursor-not-allowed opacity-40;
+  .panel-title {
+    @apply text-lg font-semibold tracking-tight text-text;
+  }
+
+  .status-chip {
+    @apply rounded-full border px-3 py-1 text-xs font-medium;
+  }
+
+  .status-chip-idle {
+    border-color: var(--line-soft);
+    background: rgba(26, 36, 50, 0.9);
+    color: var(--muted);
+  }
+
+  .status-chip-success {
+    border-color: rgba(90, 245, 148, 0.36);
+    background: rgba(90, 245, 148, 0.14);
+    color: #9af3c0;
+  }
+
+  .control-select {
+    @apply rounded-button border px-3 py-2 text-sm text-text outline-none transition;
+    border-color: var(--line-soft);
+    background: var(--surface-strong);
+  }
+
+  .control-select:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(94, 165, 255, 0.26);
+  }
+
+  .control-button {
+    @apply rounded-button border px-3 py-2 text-sm text-text transition-all duration-150;
+    border-color: var(--line-soft);
+    background: var(--surface-strong);
+  }
+
+  .control-button:hover {
+    border-color: rgba(94, 165, 255, 0.55);
+    background: var(--panel3);
+  }
+
+  .control-button:disabled {
+    @apply cursor-not-allowed opacity-45;
+  }
+
+  .control-button-accent {
+    border-color: rgba(94, 165, 255, 0.7);
+    background: var(--accent-soft);
+    color: #dbe9ff;
+  }
+
+  .tool-card {
+    @apply flex w-full items-start gap-3 rounded-button border px-3 py-3 text-left transition-all duration-150;
+    border-color: var(--line-soft);
+    background: var(--surface-strong);
+  }
+
+  .tool-card:hover {
+    border-color: rgba(94, 165, 255, 0.45);
+    background: rgba(34, 48, 68, 0.88);
+    transform: translateY(-1px);
+  }
+
+  .tool-card:disabled {
+    @apply cursor-not-allowed opacity-45;
+    transform: none;
+  }
+
+  .tool-card-selected {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px rgba(120, 179, 255, 0.35);
+  }
+
+  .tool-icon-wrap {
+    @apply h-11 w-11 shrink-0 rounded-button border p-1.5 text-text;
+    border-color: var(--line-soft);
+    background: var(--panel);
+  }
+
+  .hotkey-chip {
+    @apply rounded-md border px-1.5 py-0.5 text-[11px] text-muted;
+    border-color: var(--line-soft);
+    background: var(--panel);
+  }
+
+  .rule-chip {
+    @apply rounded-full border px-2.5 py-1 text-[11px] font-medium;
+  }
+
+  .rule-chip-on {
+    border-color: rgba(94, 165, 255, 0.56);
+    background: var(--accent-soft);
+    color: #dbe9ff;
+  }
+
+  .rule-chip-off {
+    border-color: var(--line-soft);
+    background: var(--surface-strong);
+    color: var(--muted);
+  }
+
+  .status-row {
+    @apply flex items-center gap-3 rounded-button border px-3 py-2;
+    border-color: var(--line-soft);
+    background: var(--surface-strong);
+  }
+
+  .stat-grid {
+    @apply grid grid-cols-2 gap-3;
+  }
+
+  .stat-k {
+    @apply text-[11px] text-muted;
+  }
+
+  .stat-v {
+    @apply mt-1 text-sm font-semibold text-text;
+  }
+
+  .board-wrap {
+    background:
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 42%),
+      var(--board);
+  }
+
+  .board-cell {
+    @apply relative border transition-colors;
+    border-color: var(--grid-line);
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  .board-cell-default {
+    background: transparent;
+  }
+
+  .board-cell-default:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .board-cell-pad {
+    background: rgba(94, 165, 255, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(114, 170, 255, 0.18);
+  }
+
+  .board-cell-placeable {
+    background: rgba(94, 165, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(132, 189, 255, 0.45);
+  }
+
+  .board-cell-wall {
+    background: rgba(45, 60, 85, 0.68);
+    box-shadow: inset 0 0 0 1px rgba(10, 14, 20, 0.5);
+  }
+
+  .board-cell-selected {
+    background: rgba(94, 165, 255, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(94, 165, 255, 0.7);
+  }
+
+  .board-tag {
+    @apply absolute right-1 top-1 rounded px-1 text-[9px] leading-none text-muted;
+    background: rgba(19, 27, 39, 0.9);
+  }
+
+  .piece-chip {
+    @apply h-[82%] w-[82%] rounded-cell border p-1 text-text;
+    border-color: var(--line-soft);
+    background: rgba(26, 36, 50, 0.85);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  }
+
+  .piece-chip-selected {
+    border-color: var(--accent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 0 2px rgba(91, 167, 255, 0.22);
+  }
+
+  .piece-chip-fixed {
+    opacity: 0.9;
+  }
+
+  .piece-lock {
+    @apply absolute right-[4px] top-[4px] rounded px-1 py-[1px] text-[9px] text-muted;
+    background: rgba(19, 27, 39, 0.94);
+  }
+}
+
+@keyframes app-appear {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

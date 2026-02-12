@@ -5,11 +5,15 @@ export default {
     extend: {
       colors: {
         bg: 'var(--bg)',
+        bg2: 'var(--bg-2)',
         panel: 'var(--panel)',
         panel2: 'var(--panel2)',
+        panel3: 'var(--panel3)',
         text: 'var(--text)',
         muted: 'var(--muted)',
         accent: 'var(--accent)',
+        line: 'var(--line)',
+        board: 'var(--board)',
         gridline: 'var(--grid-line)',
         wall: 'var(--wall)',
         rayr: 'var(--ray-r)',

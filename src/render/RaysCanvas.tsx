@@ -52,15 +52,18 @@ export function RaysCanvas({ width, height, cellSize, paths }: RaysCanvasProps) 
         ctx.lineTo(toPixel(path.points[i].x, cellSize), toPixel(path.points[i].y, cellSize));
       }
 
-      ctx.lineWidth = 6;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+
+      ctx.lineWidth = 5;
       ctx.strokeStyle = color;
       ctx.globalAlpha = alpha * 0.18;
       ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+      ctx.shadowBlur = 8;
       ctx.stroke();
 
       ctx.shadowBlur = 0;
-      ctx.lineWidth = 2.4;
+      ctx.lineWidth = 2.2;
       ctx.globalAlpha = alpha;
       ctx.strokeStyle = color;
       ctx.stroke();

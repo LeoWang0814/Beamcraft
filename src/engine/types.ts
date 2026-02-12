@@ -65,6 +65,11 @@ export interface LevelRules {
 export interface LevelDefinition {
   id: string;
   title: string;
+  subtitle?: string;
+  objective?: string;
+  hint?: string;
+  designerNote?: string;
+  buildPads?: GridPoint[];
   grid: {
     w: number;
     h: number;
@@ -122,15 +127,15 @@ export interface SimResult {
 export const PLACEABLE_ORDER: PlaceablePieceType[] = ['MIRROR', 'PRISM', 'FILTER_R', 'FILTER_G', 'FILTER_B'];
 
 export const PIECE_LABELS: Record<PieceType, string> = {
-  SOURCE: 'Source',
-  PRISM: 'Prism',
-  MIRROR: 'Mirror',
-  FILTER_R: 'Filter R',
-  FILTER_G: 'Filter G',
-  FILTER_B: 'Filter B',
-  RECV_R: 'Receiver R',
-  RECV_G: 'Receiver G',
-  RECV_B: 'Receiver B',
+  SOURCE: '光源',
+  PRISM: '棱镜',
+  MIRROR: '镜子',
+  FILTER_R: '红滤镜',
+  FILTER_G: '绿滤镜',
+  FILTER_B: '蓝滤镜',
+  RECV_R: '红接收器',
+  RECV_G: '绿接收器',
+  RECV_B: '蓝接收器',
 };
 
 export const FILTER_TO_COLOR: Record<'FILTER_R' | 'FILTER_G' | 'FILTER_B', ReceiverKey> = {

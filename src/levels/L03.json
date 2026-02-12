@@ -1,23 +1,26 @@
 ﻿{
   "id": "L03",
   "title": "双反射通道",
+  "subtitle": "第三关需要两次反射才能点亮绿色接收器。",
+  "objective": "红蓝两束已自动命中，重点是把绿色光经过两次反射导到左侧 G 接收器。",
+  "hint": "第一面镜子先把绿色往上折，第二面镜子再把它往左折。",
+  "designerNote": "这是 D8 镜面反射路径思考的基础关。",
+  "buildPads": [
+    { "x": 6, "y": 6 },
+    { "x": 6, "y": 4 }
+  ],
   "grid": { "w": 12, "h": 12 },
   "mode": "D8",
   "fixed": [
     { "id": "l03-source", "type": "SOURCE", "x": 1, "y": 6, "dir": 0, "color": 7, "intensity": 300, "locked": true },
     { "id": "l03-prism", "type": "PRISM", "x": 3, "y": 6, "dir": 0, "locked": true },
-    { "id": "l03-r", "type": "RECV_R", "x": 8, "y": 1, "dir": 0, "threshold": 100, "locked": true },
-    { "id": "l03-g", "type": "RECV_G", "x": 10, "y": 3, "dir": 0, "threshold": 100, "locked": true },
-    { "id": "l03-b", "type": "RECV_B", "x": 8, "y": 11, "dir": 0, "threshold": 100, "locked": true }
+    { "id": "l03-r", "type": "RECV_R", "x": 8, "y": 11, "dir": 0, "threshold": 100, "locked": true },
+    { "id": "l03-g", "type": "RECV_G", "x": 1, "y": 4, "dir": 0, "threshold": 100, "locked": true },
+    { "id": "l03-b", "type": "RECV_B", "x": 8, "y": 1, "dir": 0, "threshold": 100, "locked": true }
   ],
-  "walls": [
-    { "x": 5, "y": 2 },
-    { "x": 5, "y": 10 },
-    { "x": 9, "y": 2 },
-    { "x": 9, "y": 10 }
-  ],
+  "walls": [],
   "inventory": [
-    { "type": "MIRROR", "count": 4 },
+    { "type": "MIRROR", "count": 2 },
     { "type": "PRISM", "count": 0 },
     { "type": "FILTER_R", "count": 0 },
     { "type": "FILTER_G", "count": 0 },
