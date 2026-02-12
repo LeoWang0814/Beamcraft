@@ -34,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added optional level metadata fields:
   - `subtitle`, `objective`, `hint`, `designerNote`, `buildPads`.
 - Added regression helper script `scripts/verify-levels.ts` and npm command `npm run check:levels` to verify known-solvable level states.
+- Added deterministic mirror reflection harness `scripts/test-reflection.ts` and npm command `npm run check:reflection`.
 - Added rebuilt level set under `src/levels/` with guided puzzle intent:
   - `L01` single-mirror green routing,
   - `L02` filter purification with purity rule,
@@ -51,13 +52,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactored app behavior for explicit level switching reset (no state set inside effect).
 - Updated levels to communicate objective intent directly in the UI and reduce blind trial-and-error.
 - Updated TypeScript config to include React type entries for strict build compatibility.
+- Updated visual theme from blue-biased dark UI to neutral gray + off-white palette with tighter token discipline.
+- Updated mirror rendering to show only two effective states (`/` and `\`) so visuals match engine behavior.
 
 ### Fixed
+- Fixed Bug A: ray colors rendered black in some environments because Canvas did not reliably resolve CSS custom properties; now colors are resolved to concrete values before drawing.
+- Fixed Bug B: mirror reflection appeared incorrect after repeated rotations due visual orientation drifting away from logical orientation; mirror display is now parity-locked to two canonical orientations and reflection path uses explicit mirror-dir helper.
 - Fixed key handling to support both Windows and macOS undo/redo patterns.
 - Fixed confusing placement behavior by adding invalid-operation feedback and highlighted legal cells.
 - Fixed L01 routing bug where blue beam was previously intercepted by green receiver placement.
 - Fixed CSS build issues caused by invalid `@apply` usage with alpha variants on custom colors.
 - Fixed lint/build issues to keep `npm run lint` and `npm run build` clean.
+
+### Known Issues
+- `npm run dev` is an interactive long-running process; in CI-like scripted checks it may timeout by design. Repro: run dev with short command timeout.
 
 ## [0.1.0] - TBD
 ### Added

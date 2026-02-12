@@ -63,7 +63,12 @@
 
 ## 渲染策略
 - 光路：Canvas 独立层绘制 polyline + 轻微 glow；仅状态变化时重绘。
+- 颜色解析：Canvas 绘制前将 CSS 变量解析为具体颜色值，避免光线出现黑色渲染问题。
 - 元件：SVG overlay（自绘、统一风格）。
+
+## 验证脚本
+- `npm run check:levels`：验证三关在预设解法下可通关。
+- `npm run check:reflection`：验证镜面反射在 D8 下的查表、公式与边界方向一致性。
 
 ## 工程结构约束
 - `engine/`：纯逻辑与类型。

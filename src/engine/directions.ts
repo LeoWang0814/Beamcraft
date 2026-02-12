@@ -56,3 +56,8 @@ export function reflectBackslash(dir: Dir8): Dir8 {
 export function mirrorKindFromDir(dir: Dir8): '/' | '\\' {
   return dir % 2 === 0 ? '/' : '\\';
 }
+
+export function reflectByMirrorDir(dir: Dir8, mirrorDir: Dir8): Dir8 {
+  const kind = mirrorKindFromDir(mirrorDir);
+  return kind === '/' ? reflectSlash(dir) : reflectBackslash(dir);
+}

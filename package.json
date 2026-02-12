@@ -8,7 +8,8 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "check:levels": "tsx scripts/verify-levels.ts"
+    "check:levels": "tsx scripts/verify-levels.ts",
+    "check:reflection": "tsx scripts/test-reflection.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

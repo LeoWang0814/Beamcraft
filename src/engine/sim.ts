@@ -15,9 +15,7 @@ import {
 } from './types';
 import {
   dirToVector,
-  mirrorKindFromDir,
-  reflectBackslash,
-  reflectSlash,
+  reflectByMirrorDir,
   rotateDir,
 } from './directions';
 
@@ -211,8 +209,7 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[]): 
         }
 
         bounceCount += 1;
-        const kind = mirrorKindFromDir(piece.dir);
-        const reflectedDir = kind === '/' ? reflectSlash(current.dir) : reflectBackslash(current.dir);
+        const reflectedDir = reflectByMirrorDir(current.dir, piece.dir);
 
         queue.push({
           id: beamId,

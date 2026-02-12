@@ -18,6 +18,13 @@ function rotationLabel(dir: number): string {
   return `${angle * 45}°`;
 }
 
+function orientationLabel(piece: PieceInstance): string {
+  if (piece.type === 'MIRROR') {
+    return piece.dir % 2 === 0 ? '/ mirror' : '\\ mirror';
+  }
+  return rotationLabel(piece.dir);
+}
+
 export function Inspector({
   selectedPiece,
   onRotateCw,
@@ -43,7 +50,7 @@ export function Inspector({
             <div className="min-w-0 flex-1">
               <div className="truncate text-sm font-medium text-text">{PIECE_LABELS[selectedPiece.type]}</div>
               <div className="mt-1 text-xs text-muted">
-                坐标 ({selectedPiece.x}, {selectedPiece.y}) · 朝向 {rotationLabel(selectedPiece.dir)}
+                坐标 ({selectedPiece.x}, {selectedPiece.y}) · 朝向 {orientationLabel(selectedPiece)}
               </div>
               {selectedPiece.fixed ? <div className="mt-1 text-xs text-amber-300/85">固定元件不可编辑</div> : null}
             </div>

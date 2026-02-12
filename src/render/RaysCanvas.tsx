@@ -10,6 +10,16 @@ interface RaysCanvasProps {
   paths: BeamPath[];
 }
 
+const FALLBACK_VARS: Record<string, string> = {
+  '--ray-r': '#ff5d75',
+  '--ray-g': '#5af594',
+  '--ray-b': '#5f87ff',
+  '--ray-y': '#ffd166',
+  '--ray-c': '#66e6ff',
+  '--ray-m': '#ff8cf2',
+  '--ray-white': '#f4f8ff',
+};
+
 function toPixel(cell: number, cellSize: number): number {
   return cell * cellSize + cellSize / 2;
 }
@@ -34,6 +44,17 @@ export function RaysCanvas({ width, height, cellSize, paths }: RaysCanvasProps) 
       return;
     }
 
+    const rootStyles = window.getComputedStyle(document.documentElement);
+    const resolveColor = (rawColor: string): string => {
+      if (!rawColor.startsWith('var(')) {
+        return rawColor;
+      }
+
+      const variableName = rawColor.slice(4, -1).trim();
+      const cssValue = rootStyles.getPropertyValue(variableName).trim();
+      return cssValue || FALLBACK_VARS[variableName] || '#ffffff';
+    };
+
     ctx.resetTransform();
     ctx.scale(dpr, dpr);
     ctx.clearRect(0, 0, width, height);
@@ -43,7 +64,7 @@ export function RaysCanvas({ width, height, cellSize, paths }: RaysCanvasProps) 
         continue;
       }
 
-      const color = maskToCss(path.color);
+      const color = resolveColor(maskToCss(path.color));
       const alpha = Math.max(0.35, Math.min(0.9, path.intensity / 300));
 
       ctx.beginPath();

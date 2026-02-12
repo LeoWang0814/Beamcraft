@@ -20,19 +20,19 @@
 - 防死循环：`maxTicks` + `visited(cell,dir,color)` + `maxBounces`。
 
 ## 设计语言与 Tokens 摘要
-- 风格：深色工作台 + 轻工业仪表感；克制高亮、避免浮夸渐变。
+- 风格：中性灰深色工作台 + 米白文本，克制高亮、避免“模板味”蓝色偏色。
 - 间距系统：8/16/24/32。
 - 圆角：Panel 12px，Button 10px，Cell 8px。
 - 阴影：`soft + lift` 双层轻阴影。
 - 核心色：
-  - bg `#0C1118`
-  - panel `#131B27`
-  - panel2 `#1A2432`
-  - panel3 `#223044`
-  - text `#EDF3FF`
-  - muted `#99A8C2`
-  - accent `#5EA5FF`
-  - line `#2A384F`
+  - bg `#141412`
+  - panel `#20201E`
+  - panel2 `#272724`
+  - panel3 `#30302D`
+  - text `#F2EFE8`
+  - muted `#B4AFA5`
+  - accent `#C7B08A`
+  - line `#3B3934`
 - 光色：R `#FF5D75` / G `#5AF594` / B `#5F87FF`。
 - SVG 规范：`viewBox 0 0 64 64`，`stroke-width 2`，`linecap/linejoin round`。
 
@@ -48,11 +48,12 @@
   - `L03`：双反射路径。
   - 三关均已用脚本验证有解（预设解法下 victory=true）。
 - 质量验证：`npm run lint` 与 `npm run build` 均通过。
+- Round 2 质量验证：`npm run check:reflection`、`npm run check:levels`、`npm run lint`、`npm run build` 均通过。
 
 ## 当前 TODO
 - 可选：加入按 Tick 播放动画模式（当前为静态预览）。
 - 可选：把关卡求解校验脚本固化到 `scripts/` 并接入 npm script。
-- 可选：增加更细粒度的 engine 单元测试。
+- 可选：把反射 harness 扩展为正式单元测试并接入 CI。
 
 ## 重要决策记录
 1. 重新引入 `buildPads`（可选字段）限制可放置区域。
@@ -65,3 +66,7 @@
 - 原因：修复“玩法摸不着头脑”的核心体验问题。
 5. 维持 Canvas 光路 + SVG 元件分层。
 - 原因：性能与清晰度兼顾，便于持续迭代美术和特效。
+6. Canvas 光色在绘制前解析 CSS 变量到具体颜色值。
+- 原因：修复不同浏览器/环境下光线偶发黑色的问题。
+7. 镜子视觉只保留两种有效姿态（`/`、`\`）。
+- 原因：保证视觉反馈与反射逻辑完全一致，消除“反射随机错向”感知。

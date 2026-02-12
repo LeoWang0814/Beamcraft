@@ -10,6 +10,7 @@ interface SvgPieceProps {
 export function SvgPiece({ piece, cellSize, selected }: SvgPieceProps) {
   const left = piece.x * cellSize;
   const top = piece.y * cellSize;
+  const visualRotation = piece.type === 'MIRROR' ? (piece.dir % 2 === 0 ? 0 : 90) : piece.dir * 45;
 
   return (
     <div
@@ -24,7 +25,7 @@ export function SvgPiece({ piece, cellSize, selected }: SvgPieceProps) {
       <div
         className={`piece-chip ${selected ? 'piece-chip-selected' : ''} ${piece.fixed ? 'piece-chip-fixed' : ''}`}
         style={{
-          transform: `rotate(${piece.dir * 45}deg)`,
+          transform: `rotate(${visualRotation}deg)`,
         }}
       >
         <PieceIconByType type={piece.type} className="h-full w-full" />

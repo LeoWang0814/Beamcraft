@@ -16,7 +16,7 @@
   .panel-surface {
     @apply rounded-panel border shadow-lift;
     border-color: var(--line-soft);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.015), transparent 35%), var(--surface-soft);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.014), transparent 35%), var(--surface-soft);
     backdrop-filter: blur(4px);
   }
 
@@ -34,7 +34,7 @@
 
   .status-chip-idle {
     border-color: var(--line-soft);
-    background: rgba(26, 36, 50, 0.9);
+    background: var(--surface-strong);
     color: var(--muted);
   }
 
@@ -52,7 +52,7 @@
 
   .control-select:focus-visible {
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(94, 165, 255, 0.26);
+    box-shadow: 0 0 0 2px rgba(199, 176, 138, 0.26);
   }
 
   .control-button {
@@ -62,18 +62,24 @@
   }
 
   .control-button:hover {
-    border-color: rgba(94, 165, 255, 0.55);
+    border-color: rgba(199, 176, 138, 0.55);
     background: var(--panel3);
+    transform: translateY(-1px);
+  }
+
+  .control-button:active {
+    transform: translateY(0);
   }
 
   .control-button:disabled {
     @apply cursor-not-allowed opacity-45;
+    transform: none;
   }
 
   .control-button-accent {
-    border-color: rgba(94, 165, 255, 0.7);
+    border-color: rgba(199, 176, 138, 0.68);
     background: var(--accent-soft);
-    color: #dbe9ff;
+    color: #f2e8d5;
   }
 
   .tool-card {
@@ -83,8 +89,8 @@
   }
 
   .tool-card:hover {
-    border-color: rgba(94, 165, 255, 0.45);
-    background: rgba(34, 48, 68, 0.88);
+    border-color: rgba(199, 176, 138, 0.45);
+    background: rgba(48, 48, 45, 0.9);
     transform: translateY(-1px);
   }
 
@@ -96,7 +102,7 @@
   .tool-card-selected {
     border-color: var(--accent);
     background: var(--accent-soft);
-    box-shadow: inset 0 0 0 1px rgba(120, 179, 255, 0.35);
+    box-shadow: inset 0 0 0 1px rgba(199, 176, 138, 0.34);
   }
 
   .tool-icon-wrap {
@@ -116,9 +122,9 @@
   }
 
   .rule-chip-on {
-    border-color: rgba(94, 165, 255, 0.56);
+    border-color: rgba(199, 176, 138, 0.56);
     background: var(--accent-soft);
-    color: #dbe9ff;
+    color: #f2e8d5;
   }
 
   .rule-chip-off {
@@ -147,7 +153,7 @@
 
   .board-wrap {
     background:
-      linear-gradient(to bottom, rgba(255, 255, 255, 0.03), transparent 42%),
+      linear-gradient(to bottom, rgba(255, 255, 255, 0.02), transparent 42%),
       var(--board);
   }
 
@@ -163,38 +169,38 @@
   }
 
   .board-cell-default:hover {
-    background: rgba(255, 255, 255, 0.04);
+    background: rgba(255, 255, 255, 0.03);
   }
 
   .board-cell-pad {
-    background: rgba(94, 165, 255, 0.06);
-    box-shadow: inset 0 0 0 1px rgba(114, 170, 255, 0.18);
+    background: rgba(199, 176, 138, 0.06);
+    box-shadow: inset 0 0 0 1px rgba(199, 176, 138, 0.2);
   }
 
   .board-cell-placeable {
-    background: rgba(94, 165, 255, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(132, 189, 255, 0.45);
+    background: rgba(199, 176, 138, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(225, 204, 167, 0.55);
   }
 
   .board-cell-wall {
-    background: rgba(45, 60, 85, 0.68);
-    box-shadow: inset 0 0 0 1px rgba(10, 14, 20, 0.5);
+    background: rgba(53, 51, 47, 0.72);
+    box-shadow: inset 0 0 0 1px rgba(14, 13, 12, 0.54);
   }
 
   .board-cell-selected {
-    background: rgba(94, 165, 255, 0.14);
-    box-shadow: inset 0 0 0 1px rgba(94, 165, 255, 0.7);
+    background: rgba(199, 176, 138, 0.14);
+    box-shadow: inset 0 0 0 1px rgba(225, 204, 167, 0.8);
   }
 
   .board-tag {
     @apply absolute right-1 top-1 rounded px-1 text-[9px] leading-none text-muted;
-    background: rgba(19, 27, 39, 0.9);
+    background: rgba(32, 32, 30, 0.92);
   }
 
   .piece-chip {
     @apply h-[82%] w-[82%] rounded-cell border p-1 text-text;
     border-color: var(--line-soft);
-    background: rgba(26, 36, 50, 0.85);
+    background: rgba(39, 39, 36, 0.84);
     transition: transform 160ms ease, box-shadow 160ms ease;
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
   }
@@ -203,7 +209,7 @@
     border-color: var(--accent);
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.14),
-      0 0 0 2px rgba(91, 167, 255, 0.22);
+      0 0 0 2px rgba(199, 176, 138, 0.24);
   }
 
   .piece-chip-fixed {
@@ -212,7 +218,7 @@
 
   .piece-lock {
     @apply absolute right-[4px] top-[4px] rounded px-1 py-[1px] text-[9px] text-muted;
-    background: rgba(19, 27, 39, 0.94);
+    background: rgba(32, 32, 30, 0.94);
   }
 }
 
