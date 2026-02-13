@@ -17,7 +17,22 @@ export type EditorAction =
   | { type: 'ROTATE_SELECTED'; steps: number }
   | {
       type: 'UPDATE_SELECTED_CONFIG';
-      config: Partial<Pick<Placement, 'delayTicks' | 'gateOpenTicks' | 'gateCloseTicks' | 'mixerRequireDistinct'>>;
+      config: Partial<
+        Pick<
+          Placement,
+          | 'delayTicks'
+          | 'gateOpenTicks'
+          | 'gateCloseTicks'
+          | 'mixerRequireDistinct'
+          | 'logicMode'
+          | 'logicOutputColor'
+          | 'accumulatorTargetColor'
+          | 'accumulatorThresholdTicks'
+          | 'accumulatorPulseTicks'
+          | 'accumulatorOutputColor'
+          | 'accumulatorOutputIntensity'
+        >
+      >;
     }
   | { type: 'DELETE_SELECTED' }
   | { type: 'UNDO' }
@@ -66,6 +81,20 @@ function defaultConfigForType(type: PlaceablePieceType): Partial<Placement> {
 
   if (type === 'MIXER') {
     return { mixerRequireDistinct: false };
+  }
+
+  if (type === 'LOGIC_GATE') {
+    return { logicMode: 'AND', logicOutputColor: 2 };
+  }
+
+  if (type === 'ACCUMULATOR') {
+    return {
+      accumulatorTargetColor: 2,
+      accumulatorThresholdTicks: 5,
+      accumulatorPulseTicks: 2,
+      accumulatorOutputColor: 2,
+      accumulatorOutputIntensity: 100,
+    };
   }
 
   return {};
@@ -177,7 +206,14 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
           nextPlacement.delayTicks !== placement.delayTicks ||
           nextPlacement.gateOpenTicks !== placement.gateOpenTicks ||
           nextPlacement.gateCloseTicks !== placement.gateCloseTicks ||
-          nextPlacement.mixerRequireDistinct !== placement.mixerRequireDistinct;
+          nextPlacement.mixerRequireDistinct !== placement.mixerRequireDistinct ||
+          nextPlacement.logicMode !== placement.logicMode ||
+          nextPlacement.logicOutputColor !== placement.logicOutputColor ||
+          nextPlacement.accumulatorTargetColor !== placement.accumulatorTargetColor ||
+          nextPlacement.accumulatorThresholdTicks !== placement.accumulatorThresholdTicks ||
+          nextPlacement.accumulatorPulseTicks !== placement.accumulatorPulseTicks ||
+          nextPlacement.accumulatorOutputColor !== placement.accumulatorOutputColor ||
+          nextPlacement.accumulatorOutputIntensity !== placement.accumulatorOutputIntensity;
 
         return nextPlacement;
       });
@@ -251,5 +287,7 @@ export function countPlacementsByType(placements: Placement[]): Record<Placeable
     SPLITTER: placements.filter((placement) => placement.type === 'SPLITTER').length,
     DELAY: placements.filter((placement) => placement.type === 'DELAY').length,
     GATE: placements.filter((placement) => placement.type === 'GATE').length,
+    LOGIC_GATE: placements.filter((placement) => placement.type === 'LOGIC_GATE').length,
+    ACCUMULATOR: placements.filter((placement) => placement.type === 'ACCUMULATOR').length,
   };
 }

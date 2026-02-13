@@ -7,14 +7,14 @@ const baseRules = {
   purity: false,
   sync: false,
   maxBounces: 64,
-  maxTicks: 60,
+  maxTicks: 80,
 } as const;
 
-function makeReceivers() {
+function makeReceivers(thresholdR = 100, thresholdG = 0, thresholdB = 0) {
   return [
-    { id: 'recv-r', type: 'RECV_R' as const, x: 5, y: 3, dir: 0 as const, threshold: 100, locked: true },
-    { id: 'recv-g', type: 'RECV_G' as const, x: 0, y: 0, dir: 0 as const, threshold: 0, locked: true },
-    { id: 'recv-b', type: 'RECV_B' as const, x: 6, y: 0, dir: 0 as const, threshold: 0, locked: true },
+    { id: 'recv-r', type: 'RECV_R' as const, x: 5, y: 3, dir: 0 as const, threshold: thresholdR, locked: true },
+    { id: 'recv-g', type: 'RECV_G' as const, x: 0, y: 0, dir: 0 as const, threshold: thresholdG, locked: true },
+    { id: 'recv-b', type: 'RECV_B' as const, x: 6, y: 0, dir: 0 as const, threshold: thresholdB, locked: true },
   ];
 }
 
@@ -101,6 +101,70 @@ const gateBlockedLevel: LevelDefinition = {
   ],
 };
 
+const logicAndLevel: LevelDefinition = {
+  id: 'timing-logic-and',
+  title: 'timing logic and',
+  difficulty: 'advanced',
+  subtitle: 'timing',
+  objective: 'timing',
+  hint: 'timing',
+  designerNote: 'timing',
+  grid: { w: 7, h: 7 },
+  mode: 'D8',
+  fixed: [
+    { id: 'src-r', type: 'SOURCE', x: 1, y: 3, dir: 0, color: COLOR_BITS.R, intensity: 100, locked: true },
+    { id: 'src-g', type: 'SOURCE', x: 3, y: 1, dir: 6, color: COLOR_BITS.G, intensity: 100, locked: true },
+    { id: 'logic-and', type: 'LOGIC_GATE', x: 3, y: 3, dir: 0, logicMode: 'AND', logicOutputColor: COLOR_BITS.R, locked: true },
+    ...makeReceivers(),
+  ],
+  walls: [],
+  inventory: [],
+  rules: baseRules,
+};
+
+const logicXorLevel: LevelDefinition = {
+  ...logicAndLevel,
+  id: 'timing-logic-xor-block',
+  fixed: [
+    { id: 'src-r', type: 'SOURCE', x: 1, y: 3, dir: 0, color: COLOR_BITS.R, intensity: 100, locked: true },
+    { id: 'src-g', type: 'SOURCE', x: 3, y: 1, dir: 6, color: COLOR_BITS.G, intensity: 100, locked: true },
+    { id: 'logic-xor', type: 'LOGIC_GATE', x: 3, y: 3, dir: 0, logicMode: 'XOR', logicOutputColor: COLOR_BITS.R, locked: true },
+    ...makeReceivers(),
+  ],
+};
+
+const accumulatorLevel: LevelDefinition = {
+  id: 'timing-accumulator',
+  title: 'timing accumulator',
+  difficulty: 'advanced',
+  subtitle: 'timing',
+  objective: 'timing',
+  hint: 'timing',
+  designerNote: 'timing',
+  grid: { w: 7, h: 7 },
+  mode: 'D8',
+  fixed: [
+    { id: 'src-g', type: 'SOURCE', x: 1, y: 3, dir: 0, color: COLOR_BITS.G, intensity: 100, locked: true },
+    {
+      id: 'acc',
+      type: 'ACCUMULATOR',
+      x: 2,
+      y: 3,
+      dir: 0,
+      accumulatorTargetColor: COLOR_BITS.G,
+      accumulatorThresholdTicks: 1,
+      accumulatorPulseTicks: 2,
+      accumulatorOutputColor: COLOR_BITS.R,
+      accumulatorOutputIntensity: 100,
+      locked: true,
+    },
+    ...makeReceivers(200, 0, 0),
+  ],
+  walls: [],
+  inventory: [],
+  rules: baseRules,
+};
+
 const sameTick = simulateLevel(mixerSameTickLevel, []);
 assert.equal(sameTick.victory, true, 'mixer should merge when two beams arrive in the same tick');
 
@@ -116,4 +180,18 @@ assert.equal(gateOpen.receivers.R.firstSatisfiedTick, 4, 'gate should pass on op
 const gateBlocked = simulateLevel(gateBlockedLevel, []);
 assert.equal(gateBlocked.victory, false, 'gate should block when beam arrives on close phase');
 
-console.log('[PASS] timing harness: mixer/delay/gate behaviors are deterministic');
+const logicAnd = simulateLevel(logicAndLevel, []);
+assert.equal(logicAnd.receivers.R.firstSatisfiedTick, 4, 'logic AND should output when two inputs arrive same tick');
+
+const logicXor = simulateLevel(logicXorLevel, []);
+assert.equal(logicXor.victory, false, 'logic XOR should reject dual-input same-tick arrivals');
+
+const accumulator = simulateLevel(accumulatorLevel, []);
+assert.equal(accumulator.receivers.R.firstSatisfiedTick, 6, 'accumulator pulse should hit receiver on deterministic tick');
+assert.equal(
+  accumulator.events.filter((event) => event.type === 'accumulator_pulse').length,
+  2,
+  'accumulator should emit configured pulse count',
+);
+
+console.log('[PASS] timing harness: mixer/delay/gate/logic/accumulator behaviors are deterministic');

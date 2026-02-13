@@ -1,24 +1,49 @@
 # AGENT Context Anchor
 
 ## 项目一句话目标与范围
-在既有 D8 规则框架下，把 Beamcraft 做成“可推理、可验证、可维护”的高质量导光解谜小游戏，重点强化 Tick 时序玩法与关卡顿悟感。
+在既有 D8 离散规则下，把 Beamcraft 打磨为“可推理、可验证、可分享”的高质量导光解谜小游戏，核心强调时序（节拍）玩法与顿悟式关卡体验。
 
-## MVP 边界（当前仍遵守）
-- 包含：D8、1格/tick、Prism/Mirror/Filter/Receiver、四档难度关卡、Undo/Redo、Inspector、Canvas 光路 + SVG 元件分层。
-- 不包含：连续角度物理、复杂回放系统、在线关卡编辑/分享。
+## MVP 边界（当前）
+- 包含：D8、1格/节拍、Canvas 光路 + SVG 元件分层、四档内置关卡 + 自定义关卡、Undo/Redo、Inspector、本地导入/导出分享串。
+- 不包含：连续角度物理、随机机制、在线服务端存档/排行榜、重型回放系统。
 
 ## 关键规则摘要
 - 方向：D8（45°离散）。
-- Tick：每 tick 固定推进 1 格。
+- 节拍推进：每束光每节拍固定推进 1 格。
 - 颜色 bitmask：`R=1, G=2, B=4, W=7`。
 - 棱镜模板：`R(dir-1) / G(dir) / B(dir+1)`。
 - 滤镜：单色透过，其余吸收。
-- 接收器：按通道累计阈值点亮。
+- 接收器：按通道累计阈值并判定点亮。
 - 防死循环：`maxTicks` + visited 状态上限 + `maxBounces`。
 
-## 新增时序规则（Round 3）
-- `sync` + `syncWindow` + `syncTargets`。
-- `sequence`（顺序点亮 + 最大 tick 间隔）。
+## 时序规则（已落地）
+- `sync` + `syncWindow` + `syncTargets`：目标接收器需在窗口内同步达标。
+- `sequence`：按顺序点亮，并受 `maxGap` 约束。
+- HUD：显示 `currentTick / maxTicks`、关键事件、播放控制（播放/暂停/单步/x1-x2-x4）。
+
+## 工具体系（当前）
+- 基础：`MIRROR`、`PRISM`、`FILTER_R/G/B`。
+- 时序创意：`MIXER`、`SPLITTER`、`DELAY`、`GATE`。
+- 逻辑扩展：`LOGIC_GATE`、`ACCUMULATOR`。
+
+## 关卡与放置约束策略
+- 默认自由放置：不再把 `buildPads` 作为硬性放置限制。
+- 约束字段：
+  - `blockedCells`（不可放置/不可通过）
+  - `fixed`（关卡预置不可移动元件）
+  - `allowedArea`（仅关卡显式启用时限制）
+  - `maxPieces` / `maxPlaceByType`（数量约束）
+- `buildPads` 仅作为教学提示高亮。
+
+## 自定义关卡与分享（Round 5）
+- 自定义关卡编辑器：可设网格、规则、库存、固定元件、墙体/阻断格并试玩。
+- 分享串格式：`BC1.<payloadBase64Url>.<checksum>`。
+- 载荷结构：`{ version: 1, level: LevelDefinition }`。
+- 校验与安全：
+  - FNV-1a checksum
+  - 严格长度和尺寸限制（含固定元件/墙体上限）
+  - 非法字段直接拒绝并提示中文错误
+- 支持 hash 分享导入：`#lvl=...`。
 
 ## 设计语言与 Tokens 摘要
 - 主题：中性灰深色工作台 + 米白文本。
@@ -26,60 +51,56 @@
 - 圆角：Panel 12 / Button 10 / Cell 8。
 - 阴影：轻量 `soft + lift`。
 - SVG 规范：`viewBox 0 0 64 64`、`stroke-width 2`、round cap/join。
+- 视口策略：`html/body/#root` 全高 + `overflow: hidden`，主界面无 body 纵向滚动。
 
 ## 当前完成度
 - 里程碑 A（引擎稳定）：完成。
 - 里程碑 B（UI 重构）：完成。
-- 里程碑 C（关卡体系 17 关）：完成。
-- 里程碑 D（Round 3：时序玩法 + 创意工具 + 导航修复）：完成。
+- 里程碑 C（关卡体系扩展至 26 关）：完成。
+- 里程碑 D（时序玩法 + 导航 +热键稳定）：完成。
+- 里程碑 E（Round 5：可重跑 + 全中文 + 自定义分享 + 逻辑工具）：完成。
 
-### 里程碑 D 具体完成项
-1. P0 输入稳定
-- 全局单一 keydown 入口（capture）。
-- 数字键工具热键重构为 `event.code` 优先（Digit/Numpad 1..9）。
-- 文本输入场景过滤，减少焦点导致的偶发失效。
+### 里程碑 E 具体完成项
+1. 可重跑模拟
+- TopBar/HUD 提供「重新运行」「重置关卡」。
+- 时序关编辑后自动从节拍 0 重跑，确保反馈即时。
 
-2. P0 导航升级
-- TopBar：上一关/下一关、当前序号。
-- 新增 Level Overview（按 difficulty 分组，展示完成与最佳数据）。
-- 切关 150ms 淡入淡出 + 强制 RESET_LEVEL。
+2. 全中文 UI
+- 新增并统一使用 `src/ui/i18n.ts` 字典。
+- 顶栏、工具栏、HUD、Inspector、Overview、编辑器、提示文案全部走字典。
 
-3. Tick 玩法正式化
-- HUD 新增 `currentTick/maxTicks` 与 Play/Pause/Step/x1-x2-x4。
-- 支持 `syncTargets` 与 `sequence` 胜利判定。
+3. 放置规则调整
+- 移除 `buildPads` 强制放置限制。
+- 默认可在空格自由放置；仅在关卡显式约束字段启用时限制。
 
-4. 新工具（4）
-- `MIXER` / `SPLITTER` / `DELAY` / `GATE`。
-- 覆盖：types、engine、SVG、Tool Dock、Inspector 参数、热键映射。
+4. 新工具接入
+- `LOGIC_GATE`、`ACCUMULATOR` 覆盖 types/engine/SVG/ToolDock/Inspector。
+- 时序事件流加入 `logic_trigger`、`accumulator_charge`、`accumulator_pulse`。
 
-5. 关卡扩展
-- 新增 9 关：`T05/T06/B06/B07/I06/I07/A04/A05/A06`。
-- 当前总计 26 关：
-  - tutorial 6
-  - basic 7
-  - intermediate 7
-  - advanced 6
+5. 编辑器与分享
+- 内置自定义关卡编辑器（本地）。
+- 单行分享串导出、导入校验、Hash 链接复制与加载。
 
-6. 脚本验证
-- `check:reflection`（镜面反射）
-- `check:levels`（全关卡可解 + 难度计数）
-- `check:timing`（Mixer/Delay/Gate 时序）
-- `check:hotkeys`（热键解析）
+6. QA/稳定性
+- 修复 `sim.ts` 延迟队列 key 写回错误。
+- 修复 App 状态与热键闭包相关 lint/行为风险。
+- 扩展 `check:timing` 覆盖 Mixer/Delay/Gate/Logic/Accumulator。
+- `check:reflection` / `check:levels` / `check:timing` / `check:hotkeys` / `lint` / `build` 全通过。
 
 ## 当前 TODO
-- 可选：为关卡概览加入筛选（仅未完成 / 仅 Tick 关）。
-- 可选：将热键稳定性做浏览器级 e2e（Playwright）自动化。
-- 可选：在 HUD 增加 tick 事件小日志（接收器命中时间点）。
+- 可选：为概览面板增加筛选（仅未完成 / 仅时序关）。
+- 可选：为热键稳定性补浏览器级 e2e（Playwright）。
+- 可选：在自定义编辑器增加 `syncTargets` 可视化选择器（当前可通过 JSON/导入支持）。
 
 ## 重要决策记录
-1. `sim.ts` 采用“按 tick 批处理”最小重构。
-- 原因：同 tick 合流、延迟释放、门控相位都需要同一 tick 视图。
+1. `sim.ts` 保持“按节拍批处理”的最小重构。
+- 原因：同节拍合流、延迟释放、门控相位与逻辑门都依赖同一节拍视图。
 
-2. 不引入重型依赖和复杂回放系统。
-- 原因：保持性能与维护成本可控。
+2. 不引入重型依赖与复杂回放。
+- 原因：维持 60FPS 目标与可维护性。
 
-3. 时间规则只扩展到 `syncTargets` 与 `sequence`。
-- 原因：满足核心玩法扩展，同时不破坏原有关卡与规则稳定性。
+3. 采用本地分享串而非在线系统。
+- 原因：满足“可分享”目标，同时避免服务端复杂度与安全维护成本。
 
-4. 新增关卡优先用脚本解验证。
-- 原因：避免“看起来可解、实际不可解”的内容回归。
+4. 保持既有核心物理不变，仅做离散扩展。
+- 原因：遵守 D8 / 1格每节拍 / bitmask / 防死循环的非谈判约束。

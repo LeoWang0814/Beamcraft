@@ -1,9 +1,11 @@
+﻿import { AccumulatorIcon } from './AccumulatorIcon';
 import { DelayIcon } from './DelayIcon';
 import { FilterIcon } from './FilterIcon';
 import { FilterBIcon } from './FilterBIcon';
 import { FilterGIcon } from './FilterGIcon';
 import { FilterRIcon } from './FilterRIcon';
 import { GateIcon } from './GateIcon';
+import { LogicGateIcon } from './LogicGateIcon';
 import { MixerIcon } from './MixerIcon';
 import { MirrorIcon } from './MirrorIcon';
 import { PrismIcon } from './PrismIcon';
@@ -52,6 +54,12 @@ export function PieceIconByType({ type, className }: PieceIconByTypeProps) {
   if (type === 'GATE') {
     return <GateIcon className={className} />;
   }
+  if (type === 'LOGIC_GATE') {
+    return <LogicGateIcon className={className} />;
+  }
+  if (type === 'ACCUMULATOR') {
+    return <AccumulatorIcon className={className} />;
+  }
   if (type === 'RECV_R') {
     return <ReceiverRIcon className={className} />;
   }
@@ -63,12 +71,14 @@ export function PieceIconByType({ type, className }: PieceIconByTypeProps) {
 }
 
 export {
+  AccumulatorIcon,
   DelayIcon,
   FilterBIcon,
   FilterGIcon,
   FilterIcon,
   FilterRIcon,
   GateIcon,
+  LogicGateIcon,
   MixerIcon,
   MirrorIcon,
   PrismIcon,
@@ -79,4 +89,3 @@ export {
   SourceIcon,
   SplitterIcon,
 };
-

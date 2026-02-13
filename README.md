@@ -1,6 +1,7 @@
 # Beamcraft - Grid Prism Puzzle
 
 一个以 **D8 离散导光 + Tick 时序推理** 为核心的 2D 网格解谜小游戏。
+当前版本支持全中文 UI、本地自定义关卡编辑与字符串分享。
 
 ## Run
 
@@ -42,7 +43,8 @@ npm run lint
 ## Tools
 
 - 基础：`MIRROR`、`PRISM`、`FILTER_R/G/B`
-- 扩展：`MIXER`、`SPLITTER`、`DELAY`、`GATE`
+- 时序扩展：`MIXER`、`SPLITTER`、`DELAY`、`GATE`
+- 逻辑扩展：`LOGIC_GATE`、`ACCUMULATOR`
 
 ## Controls
 
@@ -52,14 +54,15 @@ npm run lint
 - `Delete / Backspace` 删除选中元件
 - `Ctrl/⌘ + Z` 撤销
 - `Ctrl/⌘ + Y` 或 `Ctrl/⌘ + Shift + Z` 重做
+- 顶栏 / HUD 支持 `重新运行`（保留摆放，从节拍 0 重跑）与 `重置关卡`（恢复关卡初始状态）
 
 ## UI Guide
 
-- TopBar：上一关/下一关、分组下拉切关、Overview、Undo/Redo、Reset
-- Tool Dock：库存、描述、快捷键
-- Board：网格 + Canvas 光路 + SVG 元件
-- Mission HUD：规则状态、接收器进度、Tick 播放控制（Play/Pause/Step/x1-x2-x4）
-- Inspector：旋转/删除、Delay/Gate/Mixer 参数调节、解法串
+- TopBar：上一关/下一关、分组下拉切关、Overview、Undo/Redo、重新运行、重置关卡、自定义关卡
+- Tool Dock：库存、未解锁预告、快捷键、选中高亮
+- Board：网格 + Canvas 光路 + SVG 元件（默认自由放置，`buildPads` 仅为提示）
+- Mission HUD：规则状态、接收器进度、节拍控制（播放/暂停/单步/x1-x2-x4）与关键事件流
+- Inspector：旋转/删除、Delay/Gate/Mixer/Logic/Accumulator 参数调节、解法串
 
 ## Level Set
 
@@ -69,6 +72,23 @@ npm run lint
 - Advanced：`A01..A06`（6 关）
 
 共 26 关。
+
+## Custom Level & Share
+
+- 入口：顶栏 `自定义关卡`
+- 支持编辑：
+  - 网格尺寸、规则（purity/sync/sequence/maxTicks/maxBounces）
+  - 固定元件、墙体、阻断格
+  - 工具库存
+- 分享字符串格式：
+  - `BC1.<payloadBase64Url>.<checksum>`
+  - payload = `{ version: 1, level }`
+  - checksum = FNV-1a
+- 导入安全校验：
+  - 字符串长度限制
+  - 网格尺寸与元件数量上限
+  - 非法字段拒绝并提示中文错误
+- 支持 hash 链接导入：`#lvl=...`
 
 ## Project Structure
 
@@ -90,11 +110,15 @@ src/
     SvgPiece.tsx
   ui/
     tokens.css
+    i18n.ts
     TopBar.tsx
     Toolbar.tsx
     Hud.tsx
     Inspector.tsx
     LevelOverview.tsx
+    CustomLevelEditor.tsx
+  custom/
+    levelShare.ts
   assets/pieces/
     ... all piece SVG React icons (64x64 unified style)
   levels/

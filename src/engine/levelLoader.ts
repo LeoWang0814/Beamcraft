@@ -25,6 +25,7 @@ export function loadLevels(): LevelDefinition[] {
     basic: 1,
     intermediate: 2,
     advanced: 3,
+    custom: 4,
   };
 
   const levels = Object.values(LEVEL_MODULES)

@@ -6,6 +6,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added (Round 5)
+- Added two new discrete creative tools:
+  - `LOGIC_GATE` (`AND/XOR/NOT`) with inspector-configurable output color.
+  - `ACCUMULATOR` with configurable target color, threshold ticks, pulse ticks, output color, and output intensity.
+- Added local custom level creation and share flow:
+  - in-app `CustomLevelEditor`,
+  - one-line URL-safe level string export/import,
+  - optional hash-link share import (`#lvl=...`).
+- Added deterministic timing checks for new tools in `scripts/check-timing.ts`:
+  - logic gate trigger behavior,
+  - accumulator charge/pulse behavior.
+- Added simulation event stream coverage for timing gameplay feedback:
+  - `logic_trigger`,
+  - `accumulator_charge`,
+  - `accumulator_pulse`.
+
+### Changed (Round 5)
+- Changed level placement policy to free placement by default:
+  - `buildPads` is now visual guidance only,
+  - hard constraints come from explicit level fields (`blockedCells`, `allowedArea`, `maxPieces`, `maxPlaceByType`).
+- Changed UI copy to full Chinese dictionary-driven rendering (`src/ui/i18n.ts`), including:
+  - TopBar, ToolDock, Board, HUD, Inspector, Overview, Custom Editor, and notices.
+- Changed timing UX to emphasize rerun/control workflow:
+  - prominent `重新运行` and `重置关卡`,
+  - timed levels auto-rerun from tick 0 after placement/config changes.
+- Changed layout foundation to remove body vertical scrolling:
+  - `html/body/#root` fixed full-height with hidden outer overflow,
+  - scroll constrained to internal panels when necessary.
+- Changed tool dock visuals to include locked silhouettes and unlock flash feedback.
+
+### Fixed (Round 5)
+- Fixed TypeScript blockers in `App`/`sim` and share-code utilities that prevented clean builds.
+- Fixed delay queue write-back key handling in simulation (`queueKey` map update bug).
+- Fixed board placement hint showing internal enum ids (now shows localized tool labels).
+- Fixed residual English UI strings in editor/level text and normalized timing wording to Chinese.
+- Fixed auto-rerun signature gaps by including configurable piece params (mixer/logic/accumulator) in placement signature hash.
+- Fixed validation coverage gap: `check:timing` now guards Mixer/Delay/Gate/Logic/Accumulator determinism in one harness.
+
 ### Added
 - Added new timing-centric win condition schema:
   - `syncTargets` for partial sync groups.

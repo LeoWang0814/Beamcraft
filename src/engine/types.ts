@@ -21,6 +21,8 @@ export type PieceType =
   | 'SPLITTER'
   | 'DELAY'
   | 'GATE'
+  | 'LOGIC_GATE'
+  | 'ACCUMULATOR'
   | 'RECV_R'
   | 'RECV_G'
   | 'RECV_B';
@@ -34,7 +36,9 @@ export type PlaceablePieceType =
   | 'MIXER'
   | 'SPLITTER'
   | 'DELAY'
-  | 'GATE';
+  | 'GATE'
+  | 'LOGIC_GATE'
+  | 'ACCUMULATOR';
 
 export interface GridPoint {
   x: number;
@@ -46,6 +50,13 @@ export interface PieceConfig {
   gateOpenTicks?: number;
   gateCloseTicks?: number;
   mixerRequireDistinct?: boolean;
+  logicMode?: LogicGateMode;
+  logicOutputColor?: ColorMask;
+  accumulatorTargetColor?: ColorMask;
+  accumulatorThresholdTicks?: number;
+  accumulatorPulseTicks?: number;
+  accumulatorOutputColor?: ColorMask;
+  accumulatorOutputIntensity?: number;
 }
 
 export interface PieceInstance extends PieceConfig {
@@ -89,7 +100,9 @@ export interface SequenceRule {
   maxGap: number;
 }
 
-export type LevelDifficulty = 'tutorial' | 'basic' | 'intermediate' | 'advanced';
+export type LevelDifficulty = 'tutorial' | 'basic' | 'intermediate' | 'advanced' | 'custom';
+
+export type LogicGateMode = 'AND' | 'XOR' | 'NOT';
 
 export interface LevelDefinition {
   id: string;
@@ -100,6 +113,10 @@ export interface LevelDefinition {
   hint?: string;
   designerNote?: string;
   buildPads?: GridPoint[];
+  blockedCells?: GridPoint[];
+  allowedArea?: GridPoint[];
+  maxPieces?: number;
+  maxPlaceByType?: Partial<Record<PlaceablePieceType, number>>;
   grid: {
     w: number;
     h: number;
@@ -152,6 +169,7 @@ export interface SimStats {
 export interface SimResult {
   paths: BeamPath[];
   receivers: Record<ReceiverKey, ReceiverRuntime>;
+  events: SimEvent[];
   victory: boolean;
   timelineDone: boolean;
   stats: SimStats;
@@ -167,6 +185,8 @@ export const PLACEABLE_ORDER: PlaceablePieceType[] = [
   'SPLITTER',
   'DELAY',
   'GATE',
+  'LOGIC_GATE',
+  'ACCUMULATOR',
 ];
 
 export const PIECE_LABELS: Record<PieceType, string> = {
@@ -180,10 +200,33 @@ export const PIECE_LABELS: Record<PieceType, string> = {
   SPLITTER: '分光器',
   DELAY: '延迟器',
   GATE: '门控器',
+  LOGIC_GATE: '逻辑门',
+  ACCUMULATOR: '累积器',
   RECV_R: '红接收器',
   RECV_G: '绿接收器',
   RECV_B: '蓝接收器',
 };
+
+export type SimEventType =
+  | 'receiver_hit'
+  | 'gate_pass'
+  | 'gate_block'
+  | 'delay_release'
+  | 'mixer_trigger'
+  | 'logic_trigger'
+  | 'accumulator_charge'
+  | 'accumulator_pulse';
+
+export interface SimEvent {
+  tick: number;
+  type: SimEventType;
+  x: number;
+  y: number;
+  receiver?: ReceiverKey;
+  color?: ColorMask;
+  amount?: number;
+  meta?: string;
+}
 
 export const FILTER_TO_COLOR: Record<'FILTER_R' | 'FILTER_G' | 'FILTER_B', ReceiverKey> = {
   FILTER_R: 'R',

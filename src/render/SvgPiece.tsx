@@ -1,4 +1,4 @@
-import { PieceIconByType } from '../assets/pieces';
+﻿import { PieceIconByType } from '../assets/pieces';
 import { isGateOpenAtTick } from '../engine/sim';
 import type { PieceInstance } from '../engine/types';
 
@@ -44,4 +44,3 @@ export function SvgPiece({ piece, cellSize, currentTick, selected }: SvgPiecePro
     </div>
   );
 }
-

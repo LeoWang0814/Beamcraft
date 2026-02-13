@@ -1,4 +1,4 @@
-import { decomposeIntensity } from './colors';
+﻿import { decomposeIntensity } from './colors';
 import {
   COLOR_BITS,
   FILTER_TO_COLOR,
@@ -8,10 +8,12 @@ import {
   type ColorMask,
   type Dir8,
   type LevelDefinition,
+  type LogicGateMode,
   type PieceInstance,
   type Placement,
   type ReceiverKey,
   type ReceiverRuntime,
+  type SimEvent,
   type SimResult,
 } from './types';
 import { dirToVector, reflectByMirrorDir, rotateDir } from './directions';
@@ -36,6 +38,11 @@ interface DelayedBeam {
   intensity: number;
 }
 
+interface AccumulatorState {
+  charge: number;
+  pulseRemaining: number;
+}
+
 function cellKey(x: number, y: number): string {
   return `${x},${y}`;
 }
@@ -54,6 +61,25 @@ function clampDelayTicks(value: number | undefined): 1 | 2 | 3 {
 function clampGateTicks(value: number | undefined): number {
   const normalized = Math.floor(value ?? 1);
   return Math.max(1, Math.min(9, normalized));
+}
+
+function clampLogicMode(mode: LogicGateMode | undefined): LogicGateMode {
+  if (mode === 'XOR' || mode === 'NOT') {
+    return mode;
+  }
+  return 'AND';
+}
+
+function clampColorMask(mask: ColorMask | undefined, fallback: ColorMask): ColorMask {
+  if (mask === undefined) {
+    return fallback;
+  }
+  return ((mask & COLOR_BITS.W) as ColorMask) || fallback;
+}
+
+function clampPositiveInt(value: number | undefined, fallback: number, min: number, max: number): number {
+  const normalized = Math.floor(value ?? fallback);
+  return Math.max(min, Math.min(max, normalized));
 }
 
 function normalizePieceConfig(piece: PieceInstance): PieceInstance {
@@ -76,6 +102,25 @@ function normalizePieceConfig(piece: PieceInstance): PieceInstance {
     return {
       ...piece,
       mixerRequireDistinct: Boolean(piece.mixerRequireDistinct),
+    };
+  }
+
+  if (piece.type === 'LOGIC_GATE') {
+    return {
+      ...piece,
+      logicMode: clampLogicMode(piece.logicMode),
+      logicOutputColor: clampColorMask(piece.logicOutputColor, COLOR_BITS.W),
+    };
+  }
+
+  if (piece.type === 'ACCUMULATOR') {
+    return {
+      ...piece,
+      accumulatorTargetColor: clampColorMask(piece.accumulatorTargetColor, COLOR_BITS.G),
+      accumulatorThresholdTicks: clampPositiveInt(piece.accumulatorThresholdTicks, 5, 1, 12),
+      accumulatorPulseTicks: clampPositiveInt(piece.accumulatorPulseTicks, 2, 1, 8),
+      accumulatorOutputColor: clampColorMask(piece.accumulatorOutputColor, COLOR_BITS.G),
+      accumulatorOutputIntensity: clampPositiveInt(piece.accumulatorOutputIntensity, 100, 1, 600),
     };
   }
 
@@ -171,6 +216,7 @@ function releaseDelayedBeams(
   nextBeamId: () => number,
   nextSegmentId: () => number,
   paths: Map<number, BeamPath>,
+  events: SimEvent[],
 ): RuntimeBeam[] {
   const released: RuntimeBeam[] = [];
 
@@ -182,6 +228,14 @@ function releaseDelayedBeams(
         keep.push(item);
         continue;
       }
+
+      events.push({
+        tick,
+        type: 'delay_release',
+        x: item.x,
+        y: item.y,
+        color: item.color,
+      });
 
       released.push(
         createRuntimeBeam({
@@ -261,8 +315,23 @@ function evaluateVictory(level: LevelDefinition, receivers: Record<ReceiverKey, 
   return victory;
 }
 
+function computeLogicOutput(mode: LogicGateMode, inputs: RuntimeBeam[]): ColorMask {
+  if (inputs.length === 0) {
+    return COLOR_BITS.NONE;
+  }
+
+  const merged = inputs.reduce((sum, beam) => ((sum | beam.color) & COLOR_BITS.W) as ColorMask, COLOR_BITS.NONE as ColorMask);
+
+  if (mode === 'NOT') {
+    return (COLOR_BITS.W ^ merged) as ColorMask;
+  }
+
+  return merged;
+}
+
 export function simulateLevel(level: LevelDefinition, placements: Placement[], options?: SimOptions): SimResult {
   const board = new Map<string, PieceInstance>();
+  const events: SimEvent[] = [];
 
   for (const fixedPiece of level.fixed) {
     board.set(cellKey(fixedPiece.x, fixedPiece.y), normalizePieceConfig(fixedPiece));
@@ -272,11 +341,20 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
     board.set(cellKey(placement.x, placement.y), placementToPiece(placement));
   }
 
-  const walls = new Set(level.walls.map((wall) => cellKey(wall.x, wall.y)));
+  const blockedCells = level.blockedCells ?? [];
+  const walls = new Set([...level.walls, ...blockedCells].map((wall) => cellKey(wall.x, wall.y)));
+
   const receivers = createReceiverState(level);
   const visited = new Map<string, number>();
   const paths = new Map<number, BeamPath>();
   const delayQueues = new Map<string, DelayedBeam[]>();
+  const accumulatorState = new Map<string, AccumulatorState>();
+
+  for (const piece of board.values()) {
+    if (piece.type === 'ACCUMULATOR') {
+      accumulatorState.set(cellKey(piece.x, piece.y), { charge: 0, pulseRemaining: 0 });
+    }
+  }
 
   const tickLimit = Math.min(level.rules.maxTicks, Math.max(0, options?.tickLimit ?? level.rules.maxTicks));
 
@@ -299,14 +377,17 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
     return value;
   };
 
-  const spawnBeam = (beams: RuntimeBeam[], payload: {
-    x: number;
-    y: number;
-    dir: Dir8;
-    color: ColorMask;
-    intensity: number;
-    tick: number;
-  }): void => {
+  const spawnBeam = (
+    beams: RuntimeBeam[],
+    payload: {
+      x: number;
+      y: number;
+      dir: Dir8;
+      color: ColorMask;
+      intensity: number;
+      tick: number;
+    },
+  ): void => {
     if (payload.color === COLOR_BITS.NONE || payload.intensity <= 0) {
       return;
     }
@@ -350,7 +431,8 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
   let timelineDone = false;
 
   while (elapsedTicks < tickLimit) {
-    if (activeBeams.length === 0 && delayQueues.size === 0) {
+    const hasAccumulatorPulse = Array.from(accumulatorState.values()).some((state) => state.pulseRemaining > 0);
+    if (activeBeams.length === 0 && delayQueues.size === 0 && !hasAccumulatorPulse) {
       timelineDone = true;
       break;
     }
@@ -360,6 +442,36 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
 
     const arrivals = new Map<string, RuntimeBeam[]>();
     const nextActive: RuntimeBeam[] = [];
+
+    for (const [key, state] of accumulatorState.entries()) {
+      if (state.pulseRemaining <= 0) {
+        continue;
+      }
+
+      const piece = board.get(key);
+      if (!piece || piece.type !== 'ACCUMULATOR') {
+        continue;
+      }
+
+      events.push({
+        tick: currentTick,
+        type: 'accumulator_pulse',
+        x: piece.x,
+        y: piece.y,
+        color: piece.accumulatorOutputColor,
+      });
+
+      spawnBeam(nextActive, {
+        x: piece.x,
+        y: piece.y,
+        dir: piece.dir,
+        color: piece.accumulatorOutputColor ?? COLOR_BITS.G,
+        intensity: piece.accumulatorOutputIntensity ?? 100,
+        tick: currentTick,
+      });
+
+      state.pulseRemaining -= 1;
+    }
 
     for (const beam of activeBeams) {
       const dirVec = dirToVector(beam.dir);
@@ -391,12 +503,14 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
       }
     }
 
-    const released = releaseDelayedBeams(delayQueues, currentTick, nextBeamId, nextSegmentId, paths);
+    const released = releaseDelayedBeams(delayQueues, currentTick, nextBeamId, nextSegmentId, paths, events);
     for (const beam of released) {
       if (registerVisited(visited, beam)) {
         nextActive.push(beam);
       }
     }
+
+    const touchedAccumulators = new Set<string>();
 
     for (const [key, incoming] of arrivals.entries()) {
       const [xRaw, yRaw] = key.split(',');
@@ -427,6 +541,15 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
 
           if (accepted > 0) {
             updateReceiver(receivers[keyColor], accepted, currentTick);
+            events.push({
+              tick: currentTick,
+              type: 'receiver_hit',
+              x,
+              y,
+              receiver: keyColor,
+              color: beam.color,
+              amount: accepted,
+            });
           }
 
           if (level.rules.purity) {
@@ -593,9 +716,11 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
         for (const beam of incoming) {
           if (!gateOpen) {
             leakCount += 1;
+            events.push({ tick: currentTick, type: 'gate_block', x, y, color: beam.color });
             continue;
           }
 
+          events.push({ tick: currentTick, type: 'gate_pass', x, y, color: beam.color });
           spawnBeam(nextActive, {
             x,
             y,
@@ -615,8 +740,20 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
         const meetsDistinct = !piece.mixerRequireDistinct || uniqueDirs.size >= 2;
 
         if (usable.length >= 2 && meetsDistinct) {
-          const mergedColor = usable.reduce((sum, beam) => ((sum | beam.color) & COLOR_BITS.W) as ColorMask, COLOR_BITS.NONE as ColorMask);
+          const mergedColor = usable.reduce(
+            (sum, beam) => ((sum | beam.color) & COLOR_BITS.W) as ColorMask,
+            COLOR_BITS.NONE as ColorMask,
+          );
           const mergedIntensity = usable.reduce((sum, beam) => sum + beam.intensity, 0);
+
+          events.push({
+            tick: currentTick,
+            type: 'mixer_trigger',
+            x,
+            y,
+            color: mergedColor,
+            amount: mergedIntensity,
+          });
 
           spawnBeam(nextActive, {
             x,
@@ -633,6 +770,72 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
         continue;
       }
 
+      if (piece.type === 'LOGIC_GATE') {
+        const usable = incoming.filter((beam) => beam.intensity > 0 && beam.color !== COLOR_BITS.NONE);
+        const mode = clampLogicMode(piece.logicMode);
+        const shouldTrigger =
+          mode === 'AND' ? usable.length >= 2 : mode === 'XOR' ? usable.length === 1 : usable.length > 0;
+
+        if (shouldTrigger) {
+          const outColor = mode === 'NOT' ? computeLogicOutput('NOT', usable) : piece.logicOutputColor ?? computeLogicOutput(mode, usable);
+          const outIntensity = usable.reduce((sum, beam) => sum + beam.intensity, 0);
+
+          events.push({
+            tick: currentTick,
+            type: 'logic_trigger',
+            x,
+            y,
+            color: outColor,
+            amount: outIntensity,
+            meta: mode,
+          });
+
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: piece.dir,
+            color: outColor,
+            intensity: outIntensity,
+            tick: currentTick,
+          });
+        } else {
+          leakCount += usable.length;
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'ACCUMULATOR') {
+        touchedAccumulators.add(key);
+        const state = accumulatorState.get(key) ?? { charge: 0, pulseRemaining: 0 };
+
+        const targetColor = piece.accumulatorTargetColor ?? COLOR_BITS.G;
+        const threshold = clampPositiveInt(piece.accumulatorThresholdTicks, 5, 1, 12);
+        const active = incoming.some((beam) => (beam.color & targetColor) !== 0);
+
+        if (active) {
+          state.charge += 1;
+          events.push({
+            tick: currentTick,
+            type: 'accumulator_charge',
+            x,
+            y,
+            color: targetColor,
+            amount: state.charge,
+          });
+        } else {
+          state.charge = 0;
+        }
+
+        if (state.charge >= threshold && state.pulseRemaining <= 0) {
+          state.charge = 0;
+          state.pulseRemaining = clampPositiveInt(piece.accumulatorPulseTicks, 2, 1, 8);
+        }
+
+        accumulatorState.set(key, state);
+        continue;
+      }
+
       for (const beam of incoming) {
         if (registerVisited(visited, beam)) {
           nextActive.push(beam);
@@ -640,11 +843,26 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
       }
     }
 
+    for (const [accKey, state] of accumulatorState.entries()) {
+      if (touchedAccumulators.has(accKey) || state.pulseRemaining > 0) {
+        continue;
+      }
+
+      // 连续计数规则：未被命中时归零。
+      if (state.charge !== 0) {
+        state.charge = 0;
+        accumulatorState.set(accKey, state);
+      }
+    }
+
     activeBeams = nextActive;
   }
 
-  if (!timelineDone && activeBeams.length === 0 && delayQueues.size === 0) {
-    timelineDone = true;
+  if (!timelineDone) {
+    const hasAccumulatorPulse = Array.from(accumulatorState.values()).some((state) => state.pulseRemaining > 0);
+    if (activeBeams.length === 0 && delayQueues.size === 0 && !hasAccumulatorPulse) {
+      timelineDone = true;
+    }
   }
 
   for (const key of ['R', 'G', 'B'] as const) {
@@ -662,6 +880,7 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[], o
   return {
     paths: resolvedPaths,
     receivers,
+    events,
     victory,
     timelineDone,
     stats: {
@@ -690,7 +909,9 @@ export function isPlaceablePiece(type: PieceInstance['type']): boolean {
     type === 'MIXER' ||
     type === 'SPLITTER' ||
     type === 'DELAY' ||
-    type === 'GATE'
+    type === 'GATE' ||
+    type === 'LOGIC_GATE' ||
+    type === 'ACCUMULATOR'
   );
 }
 
@@ -703,7 +924,8 @@ export function pointBlocked(level: LevelDefinition, x: number, y: number): bool
     return true;
   }
 
-  return level.walls.some((wall) => wall.x === x && wall.y === y);
+  const blocked = level.blockedCells ?? [];
+  return [...level.walls, ...blocked].some((wall) => wall.x === x && wall.y === y);
 }
 
 export function pieceColorMask(piece: PieceInstance): ColorMask {
@@ -715,6 +937,12 @@ export function pieceColorMask(piece: PieceInstance): ColorMask {
   }
   if (piece.type === 'FILTER_B' || piece.type === 'RECV_B') {
     return COLOR_BITS.B;
+  }
+  if (piece.type === 'LOGIC_GATE') {
+    return piece.logicOutputColor ?? COLOR_BITS.W;
+  }
+  if (piece.type === 'ACCUMULATOR') {
+    return piece.accumulatorOutputColor ?? COLOR_BITS.G;
   }
   return piece.color ?? COLOR_BITS.W;
 }
