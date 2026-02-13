@@ -1,0 +1,83 @@
+{
+  "id": "A08",
+  "difficulty": "advanced",
+  "title": "Capacitor Pulse",
+  "subtitle": "Use consecutive green hits to charge and release red pulses.",
+  "objective": "Place one Accumulator to collect two consecutive G hits, then pulse R twice into receiver.",
+  "hint": "Accumulator at (4,5), target G, threshold=2, pulseTicks=2, output to the right.",
+  "designerNote": "Wrong intuition: only path geometry matters. Key constraint: consecutive-tick charging before pulse emission.",
+  "buildPads": [
+    { "x": 4, "y": 5 }
+  ],
+  "grid": { "w": 12, "h": 10 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-g-a",
+      "type": "SOURCE",
+      "x": 0,
+      "y": 5,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-g-b",
+      "type": "SOURCE",
+      "x": 4,
+      "y": 2,
+      "dir": 6,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 9,
+      "y": 5,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 0,
+      "y": 0,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 11,
+      "y": 0,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 0 },
+    { "type": "GATE", "count": 0 },
+    { "type": "LOGIC_GATE", "count": 0 },
+    { "type": "ACCUMULATOR", "count": 1 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 80,
+    "maxTicks": 260
+  }
+}

@@ -302,4 +302,6 @@ const LEVEL_ZH: Record<
   A04: { title: '零窗口对齐', subtitle: 'R 与 G 必须同节拍达标。', objective: '调整延迟让 R/G 在同一节拍满足。', hint: '延迟器设为 2 节拍。', designerNote: '顿悟点是“精确到同节拍”。' },
   A05: { title: '序列电路', subtitle: '按 G→B→R 顺序点亮。', objective: '通过两个延迟器构造顺序达标。', hint: '分别设置 1 节拍与 2 节拍。', designerNote: '错误路径是“三路越快越好”。' },
   A06: { title: '相位晶格', subtitle: '门控 + 延迟 + 混色 + 分光联动。', objective: '让 R/G 在同节拍同步完成。', hint: '门控开2关1，延迟=1 且朝下输出。', designerNote: '需要同时满足相位和合流时机。' },
+  A07: { title: '逻辑窗口', subtitle: '两路输入必须同节拍触发与门。', objective: '用一个延迟器让 R/G 同节拍进入逻辑门并输出到红接收器。', hint: '在 (4,3) 放置延迟器，朝下输出，延迟设为 1。', designerNote: '误导点是“几乎对齐就够了”。关键约束：与门只认同节拍双输入。' },
+  A08: { title: '电容脉冲', subtitle: '连续命中充能后再释放脉冲。', objective: '放置一个累积器，吃满两次连续绿光后向红接收器释放两次脉冲。', hint: '在 (4,5) 放累积器，目标色 G，阈值 2，脉冲 2。', designerNote: '误导点是只看路径长度。关键约束是“连续节拍充能”而非单次命中。' },
 };

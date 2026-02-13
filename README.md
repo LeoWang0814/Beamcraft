@@ -69,9 +69,9 @@ npm run lint
 - Tutorial：`T01..T06`（6 关）
 - Basic：`B01..B07`（7 关）
 - Intermediate：`I01..I07`（7 关）
-- Advanced：`A01..A06`（6 关）
+- Advanced：`A01..A08`（8 关）
 
-共 26 关。
+共 28 关。
 
 ## Custom Level & Share
 
@@ -122,7 +122,7 @@ src/
   assets/pieces/
     ... all piece SVG React icons (64x64 unified style)
   levels/
-    T01..T06 / B01..B07 / I01..I07 / A01..A06
+    T01..T06 / B01..B07 / I01..I07 / A01..A08
 scripts/
   test-reflection.ts
   verify-levels.ts

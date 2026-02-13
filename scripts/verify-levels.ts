@@ -81,13 +81,28 @@ const knownSolutions: Record<string, Placement[]> = {
     { id: 'p1', type: 'GATE', x: 7, y: 4, dir: 0, gateOpenTicks: 2, gateCloseTicks: 1 },
     { id: 'p2', type: 'DELAY', x: 7, y: 5, dir: 6, delayTicks: 1 },
   ],
+  A07: [{ id: 'p1', type: 'DELAY', x: 4, y: 3, dir: 6, delayTicks: 1 }],
+  A08: [
+    {
+      id: 'p1',
+      type: 'ACCUMULATOR',
+      x: 4,
+      y: 5,
+      dir: 0,
+      accumulatorTargetColor: 2,
+      accumulatorThresholdTicks: 2,
+      accumulatorPulseTicks: 2,
+      accumulatorOutputColor: 1,
+      accumulatorOutputIntensity: 100,
+    },
+  ],
 };
 
 const expectedCounts: Record<LevelDifficulty, number> = {
   tutorial: 6,
   basic: 7,
   intermediate: 7,
-  advanced: 6,
+  advanced: 8,
 };
 
 const levels: LevelDefinition[] = fileNames.map((fileName) => {

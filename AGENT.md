@@ -56,7 +56,7 @@
 ## 当前完成度
 - 里程碑 A（引擎稳定）：完成。
 - 里程碑 B（UI 重构）：完成。
-- 里程碑 C（关卡体系扩展至 26 关）：完成。
+- 里程碑 C（关卡体系扩展至 28 关）：完成。
 - 里程碑 D（时序玩法 + 导航 +热键稳定）：完成。
 - 里程碑 E（Round 5：可重跑 + 全中文 + 自定义分享 + 逻辑工具）：完成。
 
@@ -86,6 +86,11 @@
 - 修复 App 状态与热键闭包相关 lint/行为风险。
 - 扩展 `check:timing` 覆盖 Mixer/Delay/Gate/Logic/Accumulator。
 - `check:reflection` / `check:levels` / `check:timing` / `check:hotkeys` / `lint` / `build` 全通过。
+
+7. 内置关卡补充（逻辑/累积器）
+- 新增 `A07`（逻辑门同节拍对齐）。
+- 新增 `A08`（累积器连续充能与脉冲释放）。
+- 当前内置关卡总数 28（tutorial 6 / basic 7 / intermediate 7 / advanced 8）。
 
 ## 当前 TODO
 - 可选：为概览面板增加筛选（仅未完成 / 仅时序关）。

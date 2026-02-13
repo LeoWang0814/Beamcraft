@@ -17,6 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added deterministic timing checks for new tools in `scripts/check-timing.ts`:
   - logic gate trigger behavior,
   - accumulator charge/pulse behavior.
+- Added two advanced built-in levels for new tool onboarding:
+  - `A07` (logic same-tick alignment),
+  - `A08` (accumulator charge/pulse timing).
 - Added simulation event stream coverage for timing gameplay feedback:
   - `logic_trigger`,
   - `accumulator_charge`,
@@ -35,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `html/body/#root` fixed full-height with hidden outer overflow,
   - scroll constrained to internal panels when necessary.
 - Changed tool dock visuals to include locked silhouettes and unlock flash feedback.
+- Changed level verification baseline and docs to reflect `28` built-in levels (`A01..A08`).
 
 ### Fixed (Round 5)
 - Fixed TypeScript blockers in `App`/`sim` and share-code utilities that prevented clean builds.

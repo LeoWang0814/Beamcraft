@@ -1,0 +1,93 @@
+{
+  "id": "A07",
+  "difficulty": "advanced",
+  "title": "Logic Window",
+  "subtitle": "Align two channels into one logic gate on the same tick.",
+  "objective": "Use one Delay so R and G arrive at the logic gate simultaneously, then output to R receiver.",
+  "hint": "Place Delay at (4,3), make it output downward, and keep delay=1.",
+  "designerNote": "Wrong intuition: direct path looks almost correct. Key insight: logic AND only triggers on same-tick dual arrival.",
+  "buildPads": [
+    { "x": 4, "y": 3 }
+  ],
+  "grid": { "w": 10, "h": 10 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-r",
+      "type": "SOURCE",
+      "x": 0,
+      "y": 5,
+      "dir": 0,
+      "color": 1,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-g",
+      "type": "SOURCE",
+      "x": 4,
+      "y": 2,
+      "dir": 6,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "logic-main",
+      "type": "LOGIC_GATE",
+      "x": 4,
+      "y": 5,
+      "dir": 0,
+      "logicMode": "AND",
+      "logicOutputColor": 1,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 7,
+      "y": 5,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 0,
+      "y": 0,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 9,
+      "y": 0,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 1 },
+    { "type": "GATE", "count": 0 },
+    { "type": "LOGIC_GATE", "count": 0 },
+    { "type": "ACCUMULATOR", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 80,
+    "maxTicks": 220
+  }
+}
