@@ -62,9 +62,12 @@ export interface LevelRules {
   maxTicks: number;
 }
 
+export type LevelDifficulty = 'tutorial' | 'basic' | 'intermediate' | 'advanced';
+
 export interface LevelDefinition {
   id: string;
   title: string;
+  difficulty: LevelDifficulty;
   subtitle?: string;
   objective?: string;
   hint?: string;

@@ -1,0 +1,111 @@
+{
+  "id": "B05",
+  "difficulty": "basic",
+  "title": "Blue Gate",
+  "subtitle": "Blue needs extra clean energy.",
+  "objective": "With purity enabled, make B reach 200 and keep all channels valid.",
+  "hint": "Route Green first, then place Blue filter on the upper-right noise path.",
+  "designerNote": "Parallel multi-receiver objective.",
+  "buildPads": [
+    {
+      "x": 7,
+      "y": 6
+    },
+    {
+      "x": 10,
+      "y": 1
+    }
+  ],
+  "grid": {
+    "w": 12,
+    "h": 12
+  },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "source-main",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "prism-main",
+      "type": "PRISM",
+      "x": 3,
+      "y": 6,
+      "dir": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 8,
+      "y": 11,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 7,
+      "y": 3,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 8,
+      "y": 1,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "noise-b",
+      "type": "SOURCE",
+      "x": 11,
+      "y": 1,
+      "dir": 4,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    {
+      "type": "MIRROR",
+      "count": 1
+    },
+    {
+      "type": "PRISM",
+      "count": 0
+    },
+    {
+      "type": "FILTER_R",
+      "count": 0
+    },
+    {
+      "type": "FILTER_G",
+      "count": 0
+    },
+    {
+      "type": "FILTER_B",
+      "count": 1
+    }
+  ],
+  "rules": {
+    "purity": true,
+    "sync": false,
+    "syncWindow": 2,
+    "maxBounces": 64,
+    "maxTicks": 300
+  }
+}

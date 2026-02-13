@@ -33,12 +33,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - solution string copy.
 - Added optional level metadata fields:
   - `subtitle`, `objective`, `hint`, `designerNote`, `buildPads`.
+- Added required level taxonomy field: `difficulty` (`tutorial` / `basic` / `intermediate` / `advanced`).
 - Added regression helper script `scripts/verify-levels.ts` and npm command `npm run check:levels` to verify known-solvable level states.
 - Added deterministic mirror reflection harness `scripts/test-reflection.ts` and npm command `npm run check:reflection`.
-- Added rebuilt level set under `src/levels/` with guided puzzle intent:
-  - `L01` single-mirror green routing,
-  - `L02` filter purification with purity rule,
-  - `L03` two-bounce mirror routing.
+- Added expanded level set under `src/levels/` with four difficulty bands:
+  - Tutorial: `T01`-`T04`,
+  - Basic: `B01`-`B05`,
+  - Intermediate: `I01`-`I05`,
+  - Advanced: `A01`-`A03`.
+- Added level verification coverage for all 17 levels with fixed known-solvable placements.
 - Added user-facing docs:
   - `README.md` (updated UI flow, controls, level format),
   - `START_COMMAND.md` quick start.
@@ -51,9 +54,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - upgraded receiver status visuals (ring gauges).
 - Refactored app behavior for explicit level switching reset (no state set inside effect).
 - Updated levels to communicate objective intent directly in the UI and reduce blind trial-and-error.
+- Updated levels to enforce consistent JSON schema across the new level library (`subtitle/objective/hint/designerNote/difficulty`).
 - Updated TypeScript config to include React type entries for strict build compatibility.
 - Updated visual theme from blue-biased dark UI to neutral gray + off-white palette with tighter token discipline.
 - Updated mirror rendering to show only two effective states (`/` and `\`) so visuals match engine behavior.
+- Updated top-level level selector UI to show grouped options by difficulty.
+- Updated level loading sort order to difficulty-first, then id.
 
 ### Fixed
 - Fixed Bug A: ray colors rendered black in some environments because Canvas did not reliably resolve CSS custom properties; now colors are resolved to concrete values before drawing.
@@ -63,6 +69,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed L01 routing bug where blue beam was previously intercepted by green receiver placement.
 - Fixed CSS build issues caused by invalid `@apply` usage with alpha variants on custom colors.
 - Fixed lint/build issues to keep `npm run lint` and `npm run build` clean.
+- Fixed staged level designs with scripted solvability checks to prevent dead/unsat puzzle configs.
 
 ### Known Issues
 - `npm run dev` is an interactive long-running process; in CI-like scripted checks it may timeout by design. Repro: run dev with short command timeout.

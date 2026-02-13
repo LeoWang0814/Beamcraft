@@ -16,6 +16,13 @@ npm run build
 npm run preview
 ```
 
+## 验证脚本
+
+```bash
+npm run check:levels
+npm run check:reflection
+```
+
 ## 核心玩法
 
 - D8 离散方向（每 45° 一档）
@@ -36,12 +43,20 @@ npm run preview
 
 ## 界面说明
 
+- 顶栏：按难度分组的关卡切换（tutorial/basic/intermediate/advanced）
 - 左侧 `Tool Dock`：元件库存、功能描述、快捷键
 - 中央 `Board`：网格 + Canvas 光路 + SVG 元件
 - 右侧 `Mission`：关卡目标、提示、规则开关、接收器环形进度
 - 左下 `Inspector`：选中元件详情、旋转/删除、解法串复制
 
 说明：部分关卡启用了 `buildPads`，只有高亮构建位可放置元件，用于降低试错噪声、突出谜题意图。
+
+## 关卡体系
+
+- `tutorial`：4 关（T01-T04）
+- `basic`：5 关（B01-B05）
+- `intermediate`：5 关（I01-I05）
+- `advanced`：3 关（A01-A03）
 
 ## 项目结构
 
@@ -73,17 +88,18 @@ src/
     Filter*.tsx
     Receiver*.tsx
   levels/
-    L01.json
-    L02.json
-    L03.json
+    T01..T04 / B01..B05 / I01..I05 / A01..A03
+scripts/
+  verify-levels.ts
+  test-reflection.ts
 ```
 
 ## 新增关卡
 
-1. 在 `src/levels/` 新增 `Lxx.json`。
-2. 至少包含：`grid`、`mode`、`fixed`、`walls`、`inventory`、`rules`。
-3. 可选增强字段：`subtitle`、`objective`、`hint`、`designerNote`、`buildPads`。
-4. 文件会由 `import.meta.glob('../levels/*.json')` 自动加载。
+1. 在 `src/levels/` 新增 `*.json`。
+2. 必填字段：`id`、`title`、`difficulty`、`subtitle`、`objective`、`hint`、`designerNote`、`grid`、`mode`、`fixed`、`walls`、`inventory`、`rules`。
+3. 可选增强字段：`buildPads`。
+4. 在 `scripts/verify-levels.ts` 添加该关的已知可解 placement，用于回归验证。
 
 ## Vercel 部署
 

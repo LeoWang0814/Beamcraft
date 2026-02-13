@@ -1,0 +1,121 @@
+{
+  "id": "A02",
+  "difficulty": "advanced",
+  "title": "Sync + Purity",
+  "subtitle": "Red and Blue need purified bonus energy and sync.",
+  "objective": "R/B need 200, purity is on, and sync must pass (window 5).",
+  "hint": "After both filters are correct, R/B satisfy early and G arrives later within window.",
+  "designerNote": "Advanced stacked constraints.",
+  "buildPads": [
+    {
+      "x": 10,
+      "y": 1
+    },
+    {
+      "x": 10,
+      "y": 11
+    }
+  ],
+  "grid": {
+    "w": 12,
+    "h": 12
+  },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "source-main",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "prism-main",
+      "type": "PRISM",
+      "x": 3,
+      "y": 6,
+      "dir": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 8,
+      "y": 11,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 8,
+      "y": 1,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "noise-top",
+      "type": "SOURCE",
+      "x": 11,
+      "y": 1,
+      "dir": 4,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "noise-bottom",
+      "type": "SOURCE",
+      "x": 11,
+      "y": 11,
+      "dir": 4,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    {
+      "type": "MIRROR",
+      "count": 0
+    },
+    {
+      "type": "PRISM",
+      "count": 0
+    },
+    {
+      "type": "FILTER_R",
+      "count": 1
+    },
+    {
+      "type": "FILTER_G",
+      "count": 0
+    },
+    {
+      "type": "FILTER_B",
+      "count": 1
+    }
+  ],
+  "rules": {
+    "purity": true,
+    "sync": true,
+    "syncWindow": 5,
+    "maxBounces": 64,
+    "maxTicks": 340
+  }
+}

@@ -1,10 +1,10 @@
 ﻿# AGENT Context Anchor
 
 ## 项目一句话目标与范围
-交付一个“可推理、可读、可维护”的 2D 网格导光解谜成品 Demo：D8 规则稳定、交互反馈清晰、视觉系统统一、三关完整可通。
+交付一个“可推理、可读、可维护”的 2D 网格导光解谜成品 Demo：D8 规则稳定、交互反馈清晰、视觉系统统一，并具备分级关卡体系。
 
 ## MVP 边界
-- 包含：D8、1格/tick、Prism/Mirror/Filter/Receiver、三关可通、实时光路预览、Undo/Redo、Inspector、关卡目标与提示。
+- 包含：D8、1格/tick、Prism/Mirror/Filter/Receiver、四档难度关卡、实时光路预览、Undo/Redo、Inspector、关卡目标与提示。
 - 不包含：D16 连续推进、回放动画系统、内置关卡编辑器、在线分享系统。
 
 ## 关键规则摘要
@@ -20,7 +20,7 @@
 - 防死循环：`maxTicks` + `visited(cell,dir,color)` + `maxBounces`。
 
 ## 设计语言与 Tokens 摘要
-- 风格：中性灰深色工作台 + 米白文本，克制高亮、避免“模板味”蓝色偏色。
+- 风格：中性灰深色工作台 + 米白文本，克制高亮。
 - 间距系统：8/16/24/32。
 - 圆角：Panel 12px，Button 10px，Cell 8px。
 - 阴影：`soft + lift` 双层轻阴影。
@@ -40,33 +40,33 @@
 - 里程碑 A（规则引擎）：完成。
   - D8 推进、分色/反射/滤镜/接收、统计与死循环保护。
 - 里程碑 B（UI 重构）：完成。
-  - 全新 TopBar / Tool Dock / Board / Mission HUD / Inspector。
+  - TopBar / Tool Dock / Board / Mission HUD / Inspector。
   - 放置高亮、构建位（buildPads）提示、无效操作 notice、解法串复制。
-- 里程碑 C（关卡重做）：完成。
-  - `L01`：单镜引导绿色。
-  - `L02`：滤镜净化污染（purity=true）。
-  - `L03`：双反射路径。
-  - 三关均已用脚本验证有解（预设解法下 victory=true）。
-- 质量验证：`npm run lint` 与 `npm run build` 均通过。
-- Round 2 质量验证：`npm run check:reflection`、`npm run check:levels`、`npm run lint`、`npm run build` 均通过。
+- 里程碑 C（关卡体系扩展）：完成。
+  - Tutorial：`T01`-`T04`（4 关）
+  - Basic：`B01`-`B05`（5 关）
+  - Intermediate：`I01`-`I05`（5 关）
+  - Advanced：`A01`-`A03`（3 关）
+  - 关卡字段统一：`subtitle/objective/hint/designerNote/difficulty`。
+- 质量验证：
+  - `npm run check:reflection`
+  - `npm run check:levels`
+  - `npm run lint`
+  - `npm run build`
 
 ## 当前 TODO
 - 可选：加入按 Tick 播放动画模式（当前为静态预览）。
-- 可选：把关卡求解校验脚本固化到 `scripts/` 并接入 npm script。
 - 可选：把反射 harness 扩展为正式单元测试并接入 CI。
+- 可选：扩充 advanced 关卡到 4 关并引入更严格同步窗口。
 
 ## 重要决策记录
-1. 重新引入 `buildPads`（可选字段）限制可放置区域。
-- 原因：减少无意义试错，让关卡意图更可读。
-2. 将“选中元件操作”显式移入 `Inspector`。
-- 原因：降低键盘依赖，编辑行为可见且可控。
-3. 切关卡时显式同步 `RESET_LEVEL`。
-- 原因：避免副作用链式状态更新，修复 lint 风险并提升可维护性。
-4. 关卡目标写进 JSON（subtitle/objective/hint/designerNote）。
-- 原因：修复“玩法摸不着头脑”的核心体验问题。
-5. 维持 Canvas 光路 + SVG 元件分层。
-- 原因：性能与清晰度兼顾，便于持续迭代美术和特效。
-6. Canvas 光色在绘制前解析 CSS 变量到具体颜色值。
-- 原因：修复不同浏览器/环境下光线偶发黑色的问题。
-7. 镜子视觉只保留两种有效姿态（`/`、`\`）。
-- 原因：保证视觉反馈与反射逻辑完全一致，消除“反射随机错向”感知。
+1. 继续维持 Canvas 光路 + SVG 元件分层。
+- 原因：性能与清晰度兼顾，满足扩关后仍稳定。
+2. 不新增工具（Round 本次）。
+- 原因：优先扩展关卡深度，避免系统复杂度无谓上升。
+3. 关卡引入 `difficulty` 并在 UI 按难度分组。
+- 原因：便于学习曲线控制与内容组织。
+4. `verify-levels` 升级为全关卡验证并校验难度数量。
+- 原因：防止新增关卡出现不可解/漏配字段回归。
+5. 镜子视觉保持两种有效姿态（`/`、`\`）。
+- 原因：视觉反馈与反射逻辑一致，降低认知噪音。

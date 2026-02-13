@@ -1,0 +1,111 @@
+{
+  "id": "I05",
+  "difficulty": "intermediate",
+  "title": "Horizontal Purify Lane",
+  "subtitle": "Noise and main path meet on the same row.",
+  "objective": "With purity enabled, make G reach 200 via a filtered horizontal noise path.",
+  "hint": "Place Green filter before the row-6 receiver entry.",
+  "designerNote": "Filter timing and lane control.",
+  "buildPads": [
+    {
+      "x": 10,
+      "y": 6
+    },
+    {
+      "x": 6,
+      "y": 6
+    }
+  ],
+  "grid": {
+    "w": 12,
+    "h": 12
+  },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "source-main",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "prism-main",
+      "type": "PRISM",
+      "x": 3,
+      "y": 6,
+      "dir": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 8,
+      "y": 11,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 6,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 8,
+      "y": 1,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "noise-horizontal",
+      "type": "SOURCE",
+      "x": 11,
+      "y": 6,
+      "dir": 4,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    {
+      "type": "MIRROR",
+      "count": 0
+    },
+    {
+      "type": "PRISM",
+      "count": 0
+    },
+    {
+      "type": "FILTER_R",
+      "count": 0
+    },
+    {
+      "type": "FILTER_G",
+      "count": 1
+    },
+    {
+      "type": "FILTER_B",
+      "count": 0
+    }
+  ],
+  "rules": {
+    "purity": true,
+    "sync": false,
+    "syncWindow": 2,
+    "maxBounces": 64,
+    "maxTicks": 300
+  }
+}

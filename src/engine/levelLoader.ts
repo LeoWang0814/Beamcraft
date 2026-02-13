@@ -20,10 +20,24 @@ function ensureIds(level: LevelDefinition): LevelDefinition {
 }
 
 export function loadLevels(): LevelDefinition[] {
+  const difficultyOrder: Record<LevelDefinition['difficulty'], number> = {
+    tutorial: 0,
+    basic: 1,
+    intermediate: 2,
+    advanced: 3,
+  };
+
   const levels = Object.values(LEVEL_MODULES)
     .map((moduleValue) => ('default' in moduleValue ? moduleValue.default : moduleValue))
     .map(ensureIds)
-    .sort((a, b) => a.id.localeCompare(b.id));
+    .sort((a, b) => {
+      const diffOrder = difficultyOrder[a.difficulty] - difficultyOrder[b.difficulty];
+      if (diffOrder !== 0) {
+        return diffOrder;
+      }
+
+      return a.id.localeCompare(b.id);
+    });
 
   return levels;
 }

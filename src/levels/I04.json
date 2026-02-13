@@ -1,0 +1,105 @@
+{
+  "id": "I04",
+  "difficulty": "intermediate",
+  "title": "Compact Double Turn",
+  "subtitle": "Two precise turns in a tight area.",
+  "objective": "Route Green to the nearby top-left receiver using two mirrors.",
+  "hint": "Turn up first, then turn left at the top row.",
+  "designerNote": "Short-path orientation precision.",
+  "buildPads": [
+    {
+      "x": 4,
+      "y": 6
+    },
+    {
+      "x": 4,
+      "y": 1
+    },
+    {
+      "x": 6,
+      "y": 6
+    }
+  ],
+  "grid": {
+    "w": 12,
+    "h": 12
+  },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "source-main",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "prism-main",
+      "type": "PRISM",
+      "x": 3,
+      "y": 6,
+      "dir": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 8,
+      "y": 11,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 3,
+      "y": 1,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 8,
+      "y": 1,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    {
+      "type": "MIRROR",
+      "count": 2
+    },
+    {
+      "type": "PRISM",
+      "count": 0
+    },
+    {
+      "type": "FILTER_R",
+      "count": 0
+    },
+    {
+      "type": "FILTER_G",
+      "count": 0
+    },
+    {
+      "type": "FILTER_B",
+      "count": 0
+    }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "syncWindow": 2,
+    "maxBounces": 64,
+    "maxTicks": 300
+  }
+}

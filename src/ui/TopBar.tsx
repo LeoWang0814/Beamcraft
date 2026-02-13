@@ -1,4 +1,4 @@
-﻿import type { LevelDefinition } from '../engine/types';
+﻿import type { LevelDefinition, LevelDifficulty } from '../engine/types';
 
 interface TopBarProps {
   levels: LevelDefinition[];
@@ -13,6 +13,15 @@ interface TopBarProps {
   tickCount: number;
 }
 
+const DIFFICULTY_LABEL: Record<LevelDifficulty, string> = {
+  tutorial: '入门教学',
+  basic: '基础',
+  intermediate: '中级',
+  advanced: '高级',
+};
+
+const DIFFICULTY_ORDER: LevelDifficulty[] = ['tutorial', 'basic', 'intermediate', 'advanced'];
+
 export function TopBar({
   levels,
   currentLevelIndex,
@@ -26,6 +35,17 @@ export function TopBar({
   tickCount,
 }: TopBarProps) {
   const current = levels[currentLevelIndex];
+
+  const grouped: Record<LevelDifficulty, Array<{ level: LevelDefinition; index: number }>> = {
+    tutorial: [],
+    basic: [],
+    intermediate: [],
+    advanced: [],
+  };
+
+  levels.forEach((level, index) => {
+    grouped[level.difficulty].push({ level, index });
+  });
 
   return (
     <header className="panel-surface px-4 py-4">
@@ -44,6 +64,7 @@ export function TopBar({
             {victory ? '所有接收器已激活' : '调试中'}
           </div>
           <div className="status-chip status-chip-idle">Ticks {tickCount}</div>
+          <div className="status-chip status-chip-idle">{DIFFICULTY_LABEL[current.difficulty]}</div>
 
           <label htmlFor="level-select" className="sr-only">
             切换关卡
@@ -54,10 +75,14 @@ export function TopBar({
             value={currentLevelIndex}
             onChange={(event) => onChangeLevel(Number(event.target.value))}
           >
-            {levels.map((level, index) => (
-              <option key={level.id} value={index}>
-                {level.id} - {level.title}
-              </option>
+            {DIFFICULTY_ORDER.map((difficulty) => (
+              <optgroup key={difficulty} label={DIFFICULTY_LABEL[difficulty]}>
+                {grouped[difficulty].map(({ level, index }) => (
+                  <option key={level.id} value={index}>
+                    {level.id} - {level.title}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </select>
 

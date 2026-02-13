@@ -1,0 +1,109 @@
+{
+  "id": "T01",
+  "difficulty": "tutorial",
+  "title": "Single Mirror Turn",
+  "subtitle": "Learn the basic mirror redirect.",
+  "objective": "Use one mirror to route the green beam to G. Red and Blue are pre-routed.",
+  "hint": "Place the mirror on the highlighted pad and keep it as / orientation.",
+  "designerNote": "Mirror-only tutorial without prism.",
+  "buildPads": [
+    {
+      "x": 7,
+      "y": 6
+    }
+  ],
+  "grid": {
+    "w": 12,
+    "h": 12
+  },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "s-r",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 10,
+      "dir": 0,
+      "color": 1,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "s-g",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "s-b",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 2,
+      "dir": 0,
+      "color": 4,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "r-r",
+      "type": "RECV_R",
+      "x": 8,
+      "y": 10,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "r-g",
+      "type": "RECV_G",
+      "x": 7,
+      "y": 3,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "r-b",
+      "type": "RECV_B",
+      "x": 8,
+      "y": 2,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    {
+      "type": "MIRROR",
+      "count": 1
+    },
+    {
+      "type": "PRISM",
+      "count": 0
+    },
+    {
+      "type": "FILTER_R",
+      "count": 0
+    },
+    {
+      "type": "FILTER_G",
+      "count": 0
+    },
+    {
+      "type": "FILTER_B",
+      "count": 0
+    }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "syncWindow": 2,
+    "maxBounces": 64,
+    "maxTicks": 300
+  }
+}
