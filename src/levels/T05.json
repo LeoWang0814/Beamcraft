@@ -1,0 +1,81 @@
+{
+  "id": "T05",
+  "difficulty": "tutorial",
+  "title": "Same Tick Mixer",
+  "subtitle": "Two green beams must hit the mixer at the same tick.",
+  "objective": "Place one Mixer so dual green beams merge and power G=200.",
+  "hint": "Main beam and side beam arrive at (7,6) at the same tick. Set mixer output to 45° up-right.",
+  "designerNote": "Wrong intuition: route a single beam directly to receiver. Key constraint: same-tick merge.",
+  "buildPads": [
+    { "x": 7, "y": 6 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-main-g",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-side-g",
+      "type": "SOURCE",
+      "x": 7,
+      "y": 0,
+      "dir": 6,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 1,
+      "y": 1,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 10,
+      "y": 3,
+      "dir": 0,
+      "threshold": 200,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 10,
+      "y": 10,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 1 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 0 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 220
+  }
+}

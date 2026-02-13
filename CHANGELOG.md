@@ -1,4 +1,4 @@
-﻿# Changelog
+# Changelog
 
 All notable changes to this project will be documented in this file.
 
@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Added new timing-centric win condition schema:
+  - `syncTargets` for partial sync groups.
+  - `sequence` (`order` + `maxGap`) for ordered receiver activation.
+- Added four creative tools with full pipeline support (types/engine/ui/icons/inspector/hotkeys):
+  - `MIXER`, `SPLITTER`, `DELAY`, `GATE`.
+- Added tick gameplay controls in HUD: `currentTick/maxTicks`, `Play/Pause`, `Step`, `x1/x2/x4`.
+- Added level navigation upgrades:
+  - previous/next level buttons,
+  - level index indicator,
+  - grouped `Level Overview` panel with completion/best metrics.
+- Added round-3 validation scripts:
+  - `npm run check:timing` (`scripts/check-timing.ts`) for mixer/delay/gate timing behavior.
+  - `npm run check:hotkeys` (`scripts/test-hotkeys.ts`) for tool hotkey parser coverage.
+- Added 9 new levels:
+  - Tutorial: `T05`, `T06`
+  - Basic: `B06`, `B07`
+  - Intermediate: `I06`, `I07`
+  - Advanced: `A04`, `A05`, `A06`
+- Added extended level verification coverage for all 26 levels in `scripts/verify-levels.ts`.
 - Added initial product constraints extraction in `IMPLEMENTATION_NOTES.md`.
 - Added persistent agent context anchor in `AGENT.md` with MVP boundaries, core rules, design tokens, and decision log.
 - Added Keep a Changelog structure in `CHANGELOG.md` for milestone tracking.
@@ -47,6 +66,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - `START_COMMAND.md` quick start.
 
 ### Changed
+- Changed simulation core from per-beam queue stepping to tick-batch processing while preserving D8/1-cell-per-tick constraints.
+- Changed keyboard input handling to a single global capture-phase entry (`window` keydown) with `event.code`-first digit parsing.
+- Changed tool hotkey range from `1..5` to `1..9` to cover new tools.
+- Changed TopBar UX to include quick prev/next navigation and overview entry without removing grouped dropdown selection.
+- Changed App level switching flow to include 150ms fade transition + forced level reset to prevent state leakage.
+- Changed Inspector to support live config editing for new tools (`delayTicks`, `gateOpenTicks`, `gateCloseTicks`, `mixerRequireDistinct`).
+- Changed README / IMPLEMENTATION_NOTES / AGENT context docs for tick gameplay formalization and new toolset.
 - Replaced first-pass UI with a full visual/interaction redesign:
   - new layout composition (TopBar + Tool Dock + Board + Mission HUD + Inspector),
   - rewritten panel/button/card primitives,
@@ -62,6 +88,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated level loading sort order to difficulty-first, then id.
 
 ### Fixed
+- Fixed unstable numeric tool hotkeys by removing focus-sensitive handler churn and consolidating keyboard handling into one deterministic path.
+- Fixed multiple timing puzzle regressions by correcting Delay output-direction assumptions in level solutions (`I06`, `I07`, `A06`) and resolving `A04` source-line collision.
 - Fixed Bug A: ray colors rendered black in some environments because Canvas did not reliably resolve CSS custom properties; now colors are resolved to concrete values before drawing.
 - Fixed Bug B: mirror reflection appeared incorrect after repeated rotations due visual orientation drifting away from logical orientation; mirror display is now parity-locked to two canonical orientations and reflection path uses explicit mirror-dir helper.
 - Fixed key handling to support both Windows and macOS undo/redo patterns.

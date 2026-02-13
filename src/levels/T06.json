@@ -1,0 +1,81 @@
+{
+  "id": "T06",
+  "difficulty": "tutorial",
+  "title": "Delay Through Gate",
+  "subtitle": "Gate is closed on tick 6, so you must shift the beam by one tick.",
+  "objective": "Place one Delay so the green beam reaches the gate on an open tick.",
+  "hint": "Put Delay on (6,6). Default delay=1 is enough to pass the phase.",
+  "designerNote": "Wrong intuition: direct line should work. Key constraint: gate phase timing.",
+  "buildPads": [
+    { "x": 6, "y": 6 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-main-g",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "gate-main",
+      "type": "GATE",
+      "x": 7,
+      "y": 6,
+      "dir": 0,
+      "gateOpenTicks": 1,
+      "gateCloseTicks": 1,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 1,
+      "y": 1,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 10,
+      "y": 10,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 1 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 240
+  }
+}

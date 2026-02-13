@@ -1,0 +1,91 @@
+{
+  "id": "B07",
+  "difficulty": "basic",
+  "title": "Gate Window",
+  "subtitle": "The green beam reaches gate on a closed tick unless you shift it.",
+  "objective": "Use one Delay to pass the gate and light G while R stays online.",
+  "hint": "Delay at (3,4) with default value will move gate hit from tick 6 to tick 7.",
+  "designerNote": "Wrong intuition: gate looks passable on direct line. Key constraint: phase shift by 1 tick.",
+  "buildPads": [
+    { "x": 3, "y": 4 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-r",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 1,
+      "dir": 0,
+      "color": 1,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-g",
+      "type": "SOURCE",
+      "x": 0,
+      "y": 4,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "gate-g",
+      "type": "GATE",
+      "x": 6,
+      "y": 4,
+      "dir": 0,
+      "gateOpenTicks": 1,
+      "gateCloseTicks": 1,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 7,
+      "y": 1,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 4,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 10,
+      "y": 10,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 1 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 280
+  }
+}

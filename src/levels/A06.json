@@ -1,0 +1,101 @@
+{
+  "id": "A06",
+  "difficulty": "advanced",
+  "title": "Phase Lattice",
+  "subtitle": "Gate phase + Delay alignment + Mixer + Splitter under strict sync.",
+  "objective": "Tune gate phase and delay so R/G merge at mixer, then split and hit both receivers simultaneously.",
+  "hint": "Gate at (7,4) needs open=2 close=1. Delay at (7,5) should output downward with delay=1 for tick-7 merge.",
+  "designerNote": "Wrong intuition: only one timing knob is enough. Key constraints: gate phase and merge tick both must align.",
+  "buildPads": [
+    { "x": 7, "y": 4 },
+    { "x": 7, "y": 5 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-r",
+      "type": "SOURCE",
+      "x": 0,
+      "y": 6,
+      "dir": 0,
+      "color": 1,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-g",
+      "type": "SOURCE",
+      "x": 7,
+      "y": 0,
+      "dir": 6,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "mix-main",
+      "type": "MIXER",
+      "x": 7,
+      "y": 6,
+      "dir": 0,
+      "mixerRequireDistinct": true,
+      "locked": true
+    },
+    {
+      "id": "split-main",
+      "type": "SPLITTER",
+      "x": 8,
+      "y": 6,
+      "dir": 0,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 10,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 8,
+      "y": 4,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 0,
+      "y": 0,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 1 },
+    { "type": "GATE", "count": 1 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": true,
+    "syncWindow": 0,
+    "syncTargets": ["R", "G"],
+    "maxBounces": 64,
+    "maxTicks": 420
+  }
+}

@@ -1,7 +1,10 @@
-﻿import { FilterIcon } from './FilterIcon';
+import { DelayIcon } from './DelayIcon';
+import { FilterIcon } from './FilterIcon';
 import { FilterBIcon } from './FilterBIcon';
 import { FilterGIcon } from './FilterGIcon';
 import { FilterRIcon } from './FilterRIcon';
+import { GateIcon } from './GateIcon';
+import { MixerIcon } from './MixerIcon';
 import { MirrorIcon } from './MirrorIcon';
 import { PrismIcon } from './PrismIcon';
 import { ReceiverIcon } from './ReceiverIcon';
@@ -9,6 +12,7 @@ import { ReceiverBIcon } from './ReceiverBIcon';
 import { ReceiverGIcon } from './ReceiverGIcon';
 import { ReceiverRIcon } from './ReceiverRIcon';
 import { SourceIcon } from './SourceIcon';
+import { SplitterIcon } from './SplitterIcon';
 
 import type { PieceType } from '../../engine/types';
 
@@ -36,6 +40,18 @@ export function PieceIconByType({ type, className }: PieceIconByTypeProps) {
   if (type === 'FILTER_B') {
     return <FilterBIcon className={className} />;
   }
+  if (type === 'MIXER') {
+    return <MixerIcon className={className} />;
+  }
+  if (type === 'SPLITTER') {
+    return <SplitterIcon className={className} />;
+  }
+  if (type === 'DELAY') {
+    return <DelayIcon className={className} />;
+  }
+  if (type === 'GATE') {
+    return <GateIcon className={className} />;
+  }
   if (type === 'RECV_R') {
     return <ReceiverRIcon className={className} />;
   }
@@ -47,10 +63,13 @@ export function PieceIconByType({ type, className }: PieceIconByTypeProps) {
 }
 
 export {
+  DelayIcon,
   FilterBIcon,
   FilterGIcon,
   FilterIcon,
   FilterRIcon,
+  GateIcon,
+  MixerIcon,
   MirrorIcon,
   PrismIcon,
   ReceiverBIcon,
@@ -58,4 +77,6 @@ export {
   ReceiverIcon,
   ReceiverRIcon,
   SourceIcon,
+  SplitterIcon,
 };
+

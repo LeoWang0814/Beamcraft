@@ -1,0 +1,82 @@
+{
+  "id": "I07",
+  "difficulty": "intermediate",
+  "title": "Splitter Gate Weave",
+  "subtitle": "North branch hits the gate on a closed tick unless delayed.",
+  "objective": "Use Splitter and Delay so both R and G channels are satisfied.",
+  "hint": "Split at (4,6). Put Delay at (4,4), set it to 1 tick, and rotate Delay to output upward.",
+  "designerNote": "Wrong intuition: splitter alone is enough. Key constraint: gate phase on branch path.",
+  "buildPads": [
+    { "x": 4, "y": 6 },
+    { "x": 4, "y": 4 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-main",
+      "type": "SOURCE",
+      "x": 0,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "gate-r",
+      "type": "GATE",
+      "x": 4,
+      "y": 2,
+      "dir": 0,
+      "gateOpenTicks": 1,
+      "gateCloseTicks": 1,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 4,
+      "y": 1,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 10,
+      "y": 10,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 1 },
+    { "type": "DELAY", "count": 1 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 340
+  }
+}

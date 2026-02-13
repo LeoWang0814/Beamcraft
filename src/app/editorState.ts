@@ -15,6 +15,10 @@ export type EditorAction =
   | { type: 'SELECT_CELL'; cell: GridPoint | null }
   | { type: 'PLACE'; x: number; y: number; pieceType: PlaceablePieceType }
   | { type: 'ROTATE_SELECTED'; steps: number }
+  | {
+      type: 'UPDATE_SELECTED_CONFIG';
+      config: Partial<Pick<Placement, 'delayTicks' | 'gateOpenTicks' | 'gateCloseTicks' | 'mixerRequireDistinct'>>;
+    }
   | { type: 'DELETE_SELECTED' }
   | { type: 'UNDO' }
   | { type: 'REDO' }
@@ -51,6 +55,22 @@ function sameCell(a: GridPoint | null, b: GridPoint): boolean {
   return Boolean(a && a.x === b.x && a.y === b.y);
 }
 
+function defaultConfigForType(type: PlaceablePieceType): Partial<Placement> {
+  if (type === 'DELAY') {
+    return { delayTicks: 1 };
+  }
+
+  if (type === 'GATE') {
+    return { gateOpenTicks: 1, gateCloseTicks: 1 };
+  }
+
+  if (type === 'MIXER') {
+    return { mixerRequireDistinct: false };
+  }
+
+  return {};
+}
+
 export function editorReducer(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'SET_TOOL':
@@ -78,8 +98,12 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         }
 
         const replaced: Placement = {
-          ...existing,
+          id: existing.id,
+          x: existing.x,
+          y: existing.y,
+          dir: existing.dir,
           type: action.pieceType,
+          ...defaultConfigForType(action.pieceType),
         };
 
         const placements = [...state.placements];
@@ -93,6 +117,7 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
         y: action.y,
         dir: 0,
         type: action.pieceType,
+        ...defaultConfigForType(action.pieceType),
       };
 
       return commitPlacements(
@@ -124,6 +149,39 @@ export function editorReducer(state: EditorState, action: EditorAction): EditorS
       }
 
       const changed = placements.some((placement, index) => placement.dir !== state.placements[index]?.dir);
+      if (!changed) {
+        return state;
+      }
+
+      return commitPlacements(state, placements);
+    }
+
+    case 'UPDATE_SELECTED_CONFIG': {
+      if (!state.selectedCell) {
+        return state;
+      }
+
+      let changed = false;
+      const placements = state.placements.map((placement) => {
+        if (!sameCell(state.selectedCell, placement)) {
+          return placement;
+        }
+
+        const nextPlacement: Placement = {
+          ...placement,
+          ...action.config,
+        };
+
+        changed =
+          changed ||
+          nextPlacement.delayTicks !== placement.delayTicks ||
+          nextPlacement.gateOpenTicks !== placement.gateOpenTicks ||
+          nextPlacement.gateCloseTicks !== placement.gateCloseTicks ||
+          nextPlacement.mixerRequireDistinct !== placement.mixerRequireDistinct;
+
+        return nextPlacement;
+      });
+
       if (!changed) {
         return state;
       }
@@ -189,5 +247,9 @@ export function countPlacementsByType(placements: Placement[]): Record<Placeable
     FILTER_R: placements.filter((placement) => placement.type === 'FILTER_R').length,
     FILTER_G: placements.filter((placement) => placement.type === 'FILTER_G').length,
     FILTER_B: placements.filter((placement) => placement.type === 'FILTER_B').length,
+    MIXER: placements.filter((placement) => placement.type === 'MIXER').length,
+    SPLITTER: placements.filter((placement) => placement.type === 'SPLITTER').length,
+    DELAY: placements.filter((placement) => placement.type === 'DELAY').length,
+    GATE: placements.filter((placement) => placement.type === 'GATE').length,
   };
 }

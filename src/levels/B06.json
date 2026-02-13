@@ -1,0 +1,71 @@
+{
+  "id": "B06",
+  "difficulty": "basic",
+  "title": "Splitter Fork",
+  "subtitle": "One beam must feed two receivers at once.",
+  "objective": "Place a Splitter to send one branch to R and one branch to G.",
+  "hint": "Place splitter at (4,6) and keep orientation as 0°.",
+  "designerNote": "Wrong intuition: direct beam can only satisfy one target. Key constraint: branching.",
+  "buildPads": [
+    { "x": 4, "y": 6 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-main",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 7,
+      "intensity": 300,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 4,
+      "y": 2,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 9,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 1,
+      "y": 1,
+      "dir": 0,
+      "threshold": 0,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 1 },
+    { "type": "DELAY", "count": 0 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "maxBounces": 64,
+    "maxTicks": 260
+  }
+}

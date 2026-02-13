@@ -1,0 +1,96 @@
+{
+  "id": "A05",
+  "difficulty": "advanced",
+  "title": "Sequence Circuit",
+  "subtitle": "Receivers must light in strict order: G -> B -> R.",
+  "objective": "Tune delay values so sequence order is valid within maxGap=2.",
+  "hint": "Keep G direct, set B delay=1 and R delay=2.",
+  "designerNote": "Wrong intuition: all channels as fast as possible. Key constraint: ordered activation timing.",
+  "buildPads": [
+    { "x": 3, "y": 4 },
+    { "x": 3, "y": 6 }
+  ],
+  "grid": { "w": 12, "h": 12 },
+  "mode": "D8",
+  "fixed": [
+    {
+      "id": "src-g",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 2,
+      "dir": 0,
+      "color": 2,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-b",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 4,
+      "dir": 0,
+      "color": 4,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "src-r",
+      "type": "SOURCE",
+      "x": 1,
+      "y": 6,
+      "dir": 0,
+      "color": 1,
+      "intensity": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-g",
+      "type": "RECV_G",
+      "x": 6,
+      "y": 2,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-b",
+      "type": "RECV_B",
+      "x": 6,
+      "y": 4,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    },
+    {
+      "id": "recv-r",
+      "type": "RECV_R",
+      "x": 6,
+      "y": 6,
+      "dir": 0,
+      "threshold": 100,
+      "locked": true
+    }
+  ],
+  "walls": [],
+  "inventory": [
+    { "type": "MIRROR", "count": 0 },
+    { "type": "PRISM", "count": 0 },
+    { "type": "FILTER_R", "count": 0 },
+    { "type": "FILTER_G", "count": 0 },
+    { "type": "FILTER_B", "count": 0 },
+    { "type": "MIXER", "count": 0 },
+    { "type": "SPLITTER", "count": 0 },
+    { "type": "DELAY", "count": 2 },
+    { "type": "GATE", "count": 0 }
+  ],
+  "rules": {
+    "purity": false,
+    "sync": false,
+    "sequence": {
+      "order": ["G", "B", "R"],
+      "maxGap": 2
+    },
+    "maxBounces": 64,
+    "maxTicks": 380
+  }
+}

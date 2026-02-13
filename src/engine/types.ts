@@ -17,18 +17,38 @@ export type PieceType =
   | 'FILTER_R'
   | 'FILTER_G'
   | 'FILTER_B'
+  | 'MIXER'
+  | 'SPLITTER'
+  | 'DELAY'
+  | 'GATE'
   | 'RECV_R'
   | 'RECV_G'
   | 'RECV_B';
 
-export type PlaceablePieceType = 'PRISM' | 'MIRROR' | 'FILTER_R' | 'FILTER_G' | 'FILTER_B';
+export type PlaceablePieceType =
+  | 'PRISM'
+  | 'MIRROR'
+  | 'FILTER_R'
+  | 'FILTER_G'
+  | 'FILTER_B'
+  | 'MIXER'
+  | 'SPLITTER'
+  | 'DELAY'
+  | 'GATE';
 
 export interface GridPoint {
   x: number;
   y: number;
 }
 
-export interface PieceInstance {
+export interface PieceConfig {
+  delayTicks?: 1 | 2 | 3;
+  gateOpenTicks?: number;
+  gateCloseTicks?: number;
+  mixerRequireDistinct?: boolean;
+}
+
+export interface PieceInstance extends PieceConfig {
   id?: string;
   type: PieceType;
   x: number;
@@ -41,7 +61,7 @@ export interface PieceInstance {
   fixed?: boolean;
 }
 
-export interface Placement {
+export interface Placement extends PieceConfig {
   id: string;
   type: PlaceablePieceType;
   x: number;
@@ -58,8 +78,15 @@ export interface LevelRules {
   purity: boolean;
   sync: boolean;
   syncWindow?: number;
+  syncTargets?: ReceiverKey[];
+  sequence?: SequenceRule;
   maxBounces: number;
   maxTicks: number;
+}
+
+export interface SequenceRule {
+  order: ReceiverKey[];
+  maxGap: number;
 }
 
 export type LevelDifficulty = 'tutorial' | 'basic' | 'intermediate' | 'advanced';
@@ -115,6 +142,8 @@ export interface ReceiverRuntime {
 export interface SimStats {
   placedCount: number;
   totalTicks: number;
+  elapsedTicks: number;
+  tickLimit: number;
   bounceCount: number;
   leakCount: number;
   solveTick: number | null;
@@ -124,10 +153,21 @@ export interface SimResult {
   paths: BeamPath[];
   receivers: Record<ReceiverKey, ReceiverRuntime>;
   victory: boolean;
+  timelineDone: boolean;
   stats: SimStats;
 }
 
-export const PLACEABLE_ORDER: PlaceablePieceType[] = ['MIRROR', 'PRISM', 'FILTER_R', 'FILTER_G', 'FILTER_B'];
+export const PLACEABLE_ORDER: PlaceablePieceType[] = [
+  'MIRROR',
+  'PRISM',
+  'FILTER_R',
+  'FILTER_G',
+  'FILTER_B',
+  'MIXER',
+  'SPLITTER',
+  'DELAY',
+  'GATE',
+];
 
 export const PIECE_LABELS: Record<PieceType, string> = {
   SOURCE: '光源',
@@ -136,6 +176,10 @@ export const PIECE_LABELS: Record<PieceType, string> = {
   FILTER_R: '红滤镜',
   FILTER_G: '绿滤镜',
   FILTER_B: '蓝滤镜',
+  MIXER: '混色器',
+  SPLITTER: '分光器',
+  DELAY: '延迟器',
+  GATE: '门控器',
   RECV_R: '红接收器',
   RECV_G: '绿接收器',
   RECV_B: '蓝接收器',

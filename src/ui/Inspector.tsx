@@ -1,4 +1,4 @@
-﻿import { PieceIconByType } from '../assets/pieces';
+import { PieceIconByType } from '../assets/pieces';
 import { PIECE_LABELS, type PieceInstance } from '../engine/types';
 
 interface InspectorProps {
@@ -6,6 +6,7 @@ interface InspectorProps {
   onRotateCw: () => void;
   onRotateCcw: () => void;
   onDelete: () => void;
+  onUpdateConfig: (config: Partial<Pick<PieceInstance, 'delayTicks' | 'gateOpenTicks' | 'gateCloseTicks' | 'mixerRequireDistinct'>>) => void;
   canRotate: boolean;
   canDelete: boolean;
   solutionCode: string;
@@ -25,11 +26,16 @@ function orientationLabel(piece: PieceInstance): string {
   return rotationLabel(piece.dir);
 }
 
+function clampGateTick(value: number): number {
+  return Math.max(1, Math.min(9, Math.floor(value)));
+}
+
 export function Inspector({
   selectedPiece,
   onRotateCw,
   onRotateCcw,
   onDelete,
+  onUpdateConfig,
   canRotate,
   canDelete,
   solutionCode,
@@ -70,6 +76,98 @@ export function Inspector({
             删除
           </button>
         </div>
+
+        {selectedPiece && !selectedPiece.fixed && selectedPiece.type === 'DELAY' ? (
+          <div className="mt-3 rounded-button border border-line bg-panel p-2 text-xs text-muted">
+            <div className="mb-2 text-text">Delay Ticks</div>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                className="control-button"
+                onClick={() => onUpdateConfig({ delayTicks: Math.max(1, (selectedPiece.delayTicks ?? 1) - 1) as 1 | 2 | 3 })}
+              >
+                -
+              </button>
+              <div className="min-w-[56px] text-center text-sm text-text">{selectedPiece.delayTicks ?? 1}</div>
+              <button
+                type="button"
+                className="control-button"
+                onClick={() => onUpdateConfig({ delayTicks: Math.min(3, (selectedPiece.delayTicks ?? 1) + 1) as 1 | 2 | 3 })}
+              >
+                +
+              </button>
+            </div>
+          </div>
+        ) : null}
+
+        {selectedPiece && !selectedPiece.fixed && selectedPiece.type === 'GATE' ? (
+          <div className="mt-3 rounded-button border border-line bg-panel p-2 text-xs text-muted">
+            <div className="mb-2 text-text">Gate Phase</div>
+            <div className="grid grid-cols-2 gap-2">
+              <div>
+                <div className="mb-1 text-[11px]">Open Ticks</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="control-button"
+                    onClick={() =>
+                      onUpdateConfig({ gateOpenTicks: clampGateTick((selectedPiece.gateOpenTicks ?? 1) - 1) })
+                    }
+                  >
+                    -
+                  </button>
+                  <div className="min-w-[36px] text-center text-text">{selectedPiece.gateOpenTicks ?? 1}</div>
+                  <button
+                    type="button"
+                    className="control-button"
+                    onClick={() =>
+                      onUpdateConfig({ gateOpenTicks: clampGateTick((selectedPiece.gateOpenTicks ?? 1) + 1) })
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div>
+                <div className="mb-1 text-[11px]">Close Ticks</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className="control-button"
+                    onClick={() =>
+                      onUpdateConfig({ gateCloseTicks: clampGateTick((selectedPiece.gateCloseTicks ?? 1) - 1) })
+                    }
+                  >
+                    -
+                  </button>
+                  <div className="min-w-[36px] text-center text-text">{selectedPiece.gateCloseTicks ?? 1}</div>
+                  <button
+                    type="button"
+                    className="control-button"
+                    onClick={() =>
+                      onUpdateConfig({ gateCloseTicks: clampGateTick((selectedPiece.gateCloseTicks ?? 1) + 1) })
+                    }
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {selectedPiece && !selectedPiece.fixed && selectedPiece.type === 'MIXER' ? (
+          <div className="mt-3 rounded-button border border-line bg-panel p-2 text-xs text-muted">
+            <div className="mb-2 text-text">Mixer Constraint</div>
+            <button
+              type="button"
+              className="control-button w-full"
+              onClick={() => onUpdateConfig({ mixerRequireDistinct: !selectedPiece.mixerRequireDistinct })}
+            >
+              {selectedPiece.mixerRequireDistinct ? '需不同方向输入: 开' : '需不同方向输入: 关'}
+            </button>
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-3 rounded-button border border-line bg-panel2 p-3">

@@ -1,4 +1,4 @@
-﻿import fs from 'node:fs';
+import fs from 'node:fs';
 import path from 'node:path';
 
 import { simulateLevel } from '../src/engine/sim';
@@ -15,6 +15,8 @@ const knownSolutions: Record<string, Placement[]> = {
     { id: 'p2', type: 'FILTER_G', x: 9, y: 3, dir: 0 },
   ],
   T04: [{ id: 'p1', type: 'MIRROR', x: 9, y: 0, dir: 1 }],
+  T05: [{ id: 'p1', type: 'MIXER', x: 7, y: 6, dir: 1 }],
+  T06: [{ id: 'p1', type: 'DELAY', x: 6, y: 6, dir: 0, delayTicks: 1 }],
   B01: [
     { id: 'p1', type: 'MIRROR', x: 7, y: 6, dir: 0 },
     { id: 'p2', type: 'MIRROR', x: 7, y: 1, dir: 1 },
@@ -32,6 +34,8 @@ const knownSolutions: Record<string, Placement[]> = {
     { id: 'p1', type: 'MIRROR', x: 7, y: 6, dir: 0 },
     { id: 'p2', type: 'FILTER_B', x: 10, y: 1, dir: 0 },
   ],
+  B06: [{ id: 'p1', type: 'SPLITTER', x: 4, y: 6, dir: 0 }],
+  B07: [{ id: 'p1', type: 'DELAY', x: 3, y: 4, dir: 0, delayTicks: 1 }],
   I01: [
     { id: 'p1', type: 'MIRROR', x: 7, y: 6, dir: 0 },
     { id: 'p2', type: 'MIRROR', x: 7, y: 1, dir: 1 },
@@ -51,6 +55,14 @@ const knownSolutions: Record<string, Placement[]> = {
   I05: [
     { id: 'p1', type: 'FILTER_G', x: 10, y: 6, dir: 0 },
   ],
+  I06: [
+    { id: 'p1', type: 'DELAY', x: 7, y: 4, dir: 6, delayTicks: 1 },
+    { id: 'p2', type: 'MIXER', x: 7, y: 6, dir: 1 },
+  ],
+  I07: [
+    { id: 'p1', type: 'SPLITTER', x: 4, y: 6, dir: 0 },
+    { id: 'p2', type: 'DELAY', x: 4, y: 4, dir: 2, delayTicks: 1 },
+  ],
   A01: [{ id: 'p1', type: 'MIRROR', x: 7, y: 6, dir: 0 }],
   A02: [
     { id: 'p1', type: 'FILTER_B', x: 10, y: 1, dir: 0 },
@@ -60,13 +72,22 @@ const knownSolutions: Record<string, Placement[]> = {
     { id: 'p1', type: 'MIRROR', x: 7, y: 6, dir: 0 },
     { id: 'p2', type: 'FILTER_G', x: 9, y: 3, dir: 0 },
   ],
+  A04: [{ id: 'p1', type: 'DELAY', x: 3, y: 0, dir: 0, delayTicks: 2 }],
+  A05: [
+    { id: 'p1', type: 'DELAY', x: 3, y: 4, dir: 0, delayTicks: 1 },
+    { id: 'p2', type: 'DELAY', x: 3, y: 6, dir: 0, delayTicks: 2 },
+  ],
+  A06: [
+    { id: 'p1', type: 'GATE', x: 7, y: 4, dir: 0, gateOpenTicks: 2, gateCloseTicks: 1 },
+    { id: 'p2', type: 'DELAY', x: 7, y: 5, dir: 6, delayTicks: 1 },
+  ],
 };
 
 const expectedCounts: Record<LevelDifficulty, number> = {
-  tutorial: 4,
-  basic: 5,
-  intermediate: 5,
-  advanced: 3,
+  tutorial: 6,
+  basic: 7,
+  intermediate: 7,
+  advanced: 6,
 };
 
 const levels: LevelDefinition[] = fileNames.map((fileName) => {

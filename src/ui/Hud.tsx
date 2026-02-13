@@ -1,9 +1,16 @@
-﻿import { receiverColor } from '../engine/colors';
+import { receiverColor } from '../engine/colors';
 import type { LevelDefinition, ReceiverKey, ReceiverRuntime, SimResult } from '../engine/types';
 
 interface HudProps {
   sim: SimResult;
   level: LevelDefinition;
+  currentTick: number;
+  maxTicks: number;
+  isPlaying: boolean;
+  playbackSpeed: 1 | 2 | 4;
+  onTogglePlay: () => void;
+  onStep: () => void;
+  onChangeSpeed: (speed: 1 | 2 | 4) => void;
 }
 
 function progress(receiver: ReceiverRuntime): number {
@@ -55,8 +62,19 @@ function RuleChip({ enabled, label }: { enabled: boolean; label: string }) {
   return <div className={`rule-chip ${enabled ? 'rule-chip-on' : 'rule-chip-off'}`}>{label}</div>;
 }
 
-export function Hud({ sim, level }: HudProps) {
+export function Hud({
+  sim,
+  level,
+  currentTick,
+  maxTicks,
+  isPlaying,
+  playbackSpeed,
+  onTogglePlay,
+  onStep,
+  onChangeSpeed,
+}: HudProps) {
   const order: ReceiverKey[] = ['R', 'G', 'B'];
+  const hasTimeRule = Boolean(level.rules.sync || level.rules.sequence);
 
   return (
     <aside className="panel-surface h-full p-4">
@@ -68,8 +86,41 @@ export function Hud({ sim, level }: HudProps) {
 
       <div className="mt-4 flex flex-wrap gap-2">
         <RuleChip enabled={level.rules.purity} label="Purity" />
-        <RuleChip enabled={level.rules.sync} label="Sync" />
+        <RuleChip enabled={level.rules.sync} label={`Sync${level.rules.sync ? `<=${level.rules.syncWindow ?? 2}` : ''}`} />
+        <RuleChip enabled={Boolean(level.rules.sequence)} label="Sequence" />
         <RuleChip enabled={sim.victory} label="Victory" />
+      </div>
+
+      <div className="mt-4 rounded-button border border-line bg-panel2 p-3 text-xs text-muted">
+        <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="font-medium text-text">Tick 控制</div>
+          <div>
+            {currentTick} / {maxTicks}
+          </div>
+        </div>
+        {hasTimeRule ? <div className="mb-2 text-[11px] text-amber-100/70">当前关卡启用了时间规则，建议使用播放或单步调试。</div> : null}
+        <div className="flex items-center gap-2">
+          <button type="button" className="control-button flex-1" onClick={onTogglePlay}>
+            {isPlaying ? 'Pause' : 'Play'}
+          </button>
+          <button type="button" className="control-button" onClick={onStep}>
+            Step
+          </button>
+          <select
+            className="control-select"
+            value={playbackSpeed}
+            onChange={(event) => onChangeSpeed(Number(event.target.value) as 1 | 2 | 4)}
+          >
+            <option value={1}>x1</option>
+            <option value={2}>x2</option>
+            <option value={4}>x4</option>
+          </select>
+        </div>
+        {level.rules.sequence ? (
+          <div className="mt-2 text-[11px] text-muted">
+            Sequence: {level.rules.sequence.order.join(' -> ')}，每步间隔 ≤ {level.rules.sequence.maxGap} tick
+          </div>
+        ) : null}
       </div>
 
       <div className="mt-4 space-y-3">
@@ -86,7 +137,7 @@ export function Hud({ sim, level }: HudProps) {
             <div className="stat-v">{sim.stats.placedCount}</div>
           </div>
           <div>
-            <div className="stat-k">Ticks</div>
+            <div className="stat-k">Beam Steps</div>
             <div className="stat-v">{sim.stats.totalTicks}</div>
           </div>
           <div>

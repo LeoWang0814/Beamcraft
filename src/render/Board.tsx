@@ -9,6 +9,7 @@ interface BoardProps {
   level: LevelDefinition;
   pieces: PieceInstance[];
   paths: BeamPath[];
+  currentTick: number;
   selectedCell: GridPoint | null;
   selectedTool: PlaceablePieceType | null;
   placeableCells: Set<string>;
@@ -25,6 +26,7 @@ export function Board({
   level,
   pieces,
   paths,
+  currentTick,
   selectedCell,
   selectedTool,
   placeableCells,
@@ -111,6 +113,7 @@ export function Board({
                 key={piece.id ?? `piece-${piece.x}-${piece.y}-${piece.type}`}
                 piece={piece}
                 cellSize={cellSize}
+                currentTick={currentTick}
                 selected={Boolean(selectedCell && piece.x === selectedCell.x && piece.y === selectedCell.y)}
               />
             ))}

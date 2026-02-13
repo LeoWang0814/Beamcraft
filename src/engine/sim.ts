@@ -1,4 +1,4 @@
-﻿import { decomposeIntensity } from './colors';
+import { decomposeIntensity } from './colors';
 import {
   COLOR_BITS,
   FILTER_TO_COLOR,
@@ -6,6 +6,7 @@ import {
   type BeamPath,
   type BeamState,
   type ColorMask,
+  type Dir8,
   type LevelDefinition,
   type PieceInstance,
   type Placement,
@@ -13,11 +14,27 @@ import {
   type ReceiverRuntime,
   type SimResult,
 } from './types';
-import {
-  dirToVector,
-  reflectByMirrorDir,
-  rotateDir,
-} from './directions';
+import { dirToVector, reflectByMirrorDir, rotateDir } from './directions';
+
+const LOOP_VISIT_LIMIT = 8;
+const DELAY_QUEUE_CAPACITY = 8;
+
+export interface SimOptions {
+  tickLimit?: number;
+}
+
+interface RuntimeBeam extends BeamState {
+  segmentId: number;
+}
+
+interface DelayedBeam {
+  releaseTick: number;
+  x: number;
+  y: number;
+  dir: Dir8;
+  color: ColorMask;
+  intensity: number;
+}
 
 function cellKey(x: number, y: number): string {
   return `${x},${y}`;
@@ -27,12 +44,50 @@ function inBounds(level: LevelDefinition, x: number, y: number): boolean {
   return x >= 0 && y >= 0 && x < level.grid.w && y < level.grid.h;
 }
 
+function clampDelayTicks(value: number | undefined): 1 | 2 | 3 {
+  if (value === 2 || value === 3) {
+    return value;
+  }
+  return 1;
+}
+
+function clampGateTicks(value: number | undefined): number {
+  const normalized = Math.floor(value ?? 1);
+  return Math.max(1, Math.min(9, normalized));
+}
+
+function normalizePieceConfig(piece: PieceInstance): PieceInstance {
+  if (piece.type === 'DELAY') {
+    return {
+      ...piece,
+      delayTicks: clampDelayTicks(piece.delayTicks),
+    };
+  }
+
+  if (piece.type === 'GATE') {
+    return {
+      ...piece,
+      gateOpenTicks: clampGateTicks(piece.gateOpenTicks),
+      gateCloseTicks: clampGateTicks(piece.gateCloseTicks),
+    };
+  }
+
+  if (piece.type === 'MIXER') {
+    return {
+      ...piece,
+      mixerRequireDistinct: Boolean(piece.mixerRequireDistinct),
+    };
+  }
+
+  return piece;
+}
+
 function placementToPiece(placement: Placement): PieceInstance {
-  return {
+  return normalizePieceConfig({
     ...placement,
     fixed: false,
     locked: false,
-  };
+  });
 }
 
 function createReceiverState(level: LevelDefinition): Record<ReceiverKey, ReceiverRuntime> {
@@ -59,240 +114,109 @@ function updateReceiver(receiver: ReceiverRuntime, energy: number, tick: number)
   }
 }
 
-interface RuntimeBeam extends BeamState {
-  segmentId: number;
+function registerVisited(visited: Map<string, number>, beam: RuntimeBeam): boolean {
+  const key = `${beam.x},${beam.y},${beam.dir},${beam.color},${beam.intensity}`;
+  const count = (visited.get(key) ?? 0) + 1;
+  visited.set(key, count);
+  return count <= LOOP_VISIT_LIMIT;
 }
 
-export function simulateLevel(level: LevelDefinition, placements: Placement[]): SimResult {
-  const board = new Map<string, PieceInstance>();
-
-  for (const fixedPiece of level.fixed) {
-    board.set(cellKey(fixedPiece.x, fixedPiece.y), fixedPiece);
-  }
-  for (const placement of placements) {
-    board.set(cellKey(placement.x, placement.y), placementToPiece(placement));
+function registerPathPoint(paths: Map<number, BeamPath>, beam: RuntimeBeam, x: number, y: number): void {
+  const path = paths.get(beam.segmentId);
+  if (!path) {
+    return;
   }
 
-  const walls = new Set(level.walls.map((wall) => cellKey(wall.x, wall.y)));
-  const receivers = createReceiverState(level);
-
-  let segmentId = 1;
-  let beamId = 1;
-  let totalTicks = 0;
-  let bounceCount = 0;
-  let leakCount = 0;
-
-  const queue: RuntimeBeam[] = [];
-  const paths: BeamPath[] = [];
-
-  for (const piece of level.fixed) {
-    if (piece.type !== 'SOURCE') {
-      continue;
-    }
-
-    queue.push({
-      id: beamId,
-      segmentId,
-      x: piece.x,
-      y: piece.y,
-      dir: piece.dir,
-      color: piece.color ?? COLOR_BITS.W,
-      intensity: piece.intensity ?? 300,
-      tick: 0,
-    });
-
-    beamId += 1;
-    segmentId += 1;
+  const last = path.points[path.points.length - 1];
+  if (!last || last.x !== x || last.y !== y) {
+    path.points.push({ x, y });
   }
+}
 
-  while (queue.length > 0) {
-    const beam = queue.shift();
-    if (!beam) {
-      break;
-    }
+function createRuntimeBeam(params: {
+  id: number;
+  segmentId: number;
+  x: number;
+  y: number;
+  dir: Dir8;
+  color: ColorMask;
+  intensity: number;
+  tick: number;
+  paths: Map<number, BeamPath>;
+}): RuntimeBeam {
+  const beam: RuntimeBeam = {
+    id: params.id,
+    segmentId: params.segmentId,
+    x: params.x,
+    y: params.y,
+    dir: params.dir,
+    color: params.color,
+    intensity: params.intensity,
+    tick: params.tick,
+  };
 
-    const current: RuntimeBeam = { ...beam };
-    const points = [{ x: current.x, y: current.y }];
-    const visited = new Map<string, number>();
+  params.paths.set(params.segmentId, {
+    id: params.segmentId,
+    color: params.color,
+    intensity: params.intensity,
+    points: [{ x: params.x, y: params.y }],
+  });
 
-    while (current.tick < level.rules.maxTicks && current.color !== COLOR_BITS.NONE && current.intensity > 0) {
-      const dirVec = dirToVector(current.dir);
-      const nextX = current.x + dirVec.dx;
-      const nextY = current.y + dirVec.dy;
+  return beam;
+}
 
-      current.tick += 1;
-      totalTicks += 1;
+function releaseDelayedBeams(
+  delayQueues: Map<string, DelayedBeam[]>,
+  tick: number,
+  nextBeamId: () => number,
+  nextSegmentId: () => number,
+  paths: Map<number, BeamPath>,
+): RuntimeBeam[] {
+  const released: RuntimeBeam[] = [];
 
-      if (!inBounds(level, nextX, nextY)) {
-        points.push({ x: nextX, y: nextY });
-        leakCount += 1;
-        break;
-      }
+  for (const [queueKey, queue] of delayQueues.entries()) {
+    const keep: DelayedBeam[] = [];
 
-      if (walls.has(cellKey(nextX, nextY))) {
-        points.push({ x: nextX, y: nextY });
-        leakCount += 1;
-        break;
-      }
-
-      current.x = nextX;
-      current.y = nextY;
-      points.push({ x: current.x, y: current.y });
-
-      const loopKey = `${current.x},${current.y},${current.dir},${current.color}`;
-      const loopCount = (visited.get(loopKey) ?? 0) + 1;
-      visited.set(loopKey, loopCount);
-      if (loopCount > 6) {
-        break;
-      }
-
-      const piece = board.get(cellKey(current.x, current.y));
-      if (!piece) {
+    for (const item of queue) {
+      if (item.releaseTick !== tick) {
+        keep.push(item);
         continue;
       }
 
-      if (piece.type === 'SOURCE') {
-        break;
-      }
-
-      if (piece.type === 'RECV_R' || piece.type === 'RECV_G' || piece.type === 'RECV_B') {
-        const key = RECEIVER_TYPE_TO_KEY[piece.type];
-        const channel = decomposeIntensity(current.color, current.intensity);
-        const accepted = channel[key];
-        const rejected = current.intensity - accepted;
-
-        if (accepted > 0) {
-          updateReceiver(receivers[key], accepted, current.tick);
-        }
-
-        if (level.rules.purity) {
-          const foreign = key === 'R' ? channel.G + channel.B : key === 'G' ? channel.R + channel.B : channel.R + channel.G;
-          if (foreign > 0) {
-            receivers[key].contaminated = true;
-          }
-        }
-
-        if (rejected > 0) {
-          leakCount += 1;
-        }
-
-        break;
-      }
-
-      if (piece.type === 'FILTER_R' || piece.type === 'FILTER_G' || piece.type === 'FILTER_B') {
-        const key = FILTER_TO_COLOR[piece.type];
-        const channel = decomposeIntensity(current.color, current.intensity);
-        const pass = channel[key];
-
-        if (pass > 0) {
-          const color = key === 'R' ? COLOR_BITS.R : key === 'G' ? COLOR_BITS.G : COLOR_BITS.B;
-          queue.push({
-            id: beamId,
-            segmentId,
-            x: current.x,
-            y: current.y,
-            dir: current.dir,
-            color,
-            intensity: pass,
-            tick: current.tick,
-          });
-          beamId += 1;
-          segmentId += 1;
-        }
-
-        break;
-      }
-
-      if (piece.type === 'MIRROR') {
-        if (bounceCount >= level.rules.maxBounces) {
-          break;
-        }
-
-        bounceCount += 1;
-        const reflectedDir = reflectByMirrorDir(current.dir, piece.dir);
-
-        queue.push({
-          id: beamId,
-          segmentId,
-          x: current.x,
-          y: current.y,
-          dir: reflectedDir,
-          color: current.color,
-          intensity: current.intensity,
-          tick: current.tick,
-        });
-        beamId += 1;
-        segmentId += 1;
-
-        break;
-      }
-
-      if (piece.type === 'PRISM') {
-        const channel = decomposeIntensity(current.color, current.intensity);
-
-        if (channel.R > 0) {
-          queue.push({
-            id: beamId,
-            segmentId,
-            x: current.x,
-            y: current.y,
-            dir: rotateDir(piece.dir, -1),
-            color: COLOR_BITS.R,
-            intensity: channel.R,
-            tick: current.tick,
-          });
-          beamId += 1;
-          segmentId += 1;
-        }
-
-        if (channel.G > 0) {
-          queue.push({
-            id: beamId,
-            segmentId,
-            x: current.x,
-            y: current.y,
-            dir: piece.dir,
-            color: COLOR_BITS.G,
-            intensity: channel.G,
-            tick: current.tick,
-          });
-          beamId += 1;
-          segmentId += 1;
-        }
-
-        if (channel.B > 0) {
-          queue.push({
-            id: beamId,
-            segmentId,
-            x: current.x,
-            y: current.y,
-            dir: rotateDir(piece.dir, 1),
-            color: COLOR_BITS.B,
-            intensity: channel.B,
-            tick: current.tick,
-          });
-          beamId += 1;
-          segmentId += 1;
-        }
-
-        break;
-      }
+      released.push(
+        createRuntimeBeam({
+          id: nextBeamId(),
+          segmentId: nextSegmentId(),
+          x: item.x,
+          y: item.y,
+          dir: item.dir,
+          color: item.color,
+          intensity: item.intensity,
+          tick,
+          paths,
+        }),
+      );
     }
 
-    if (points.length > 1) {
-      paths.push({
-        id: current.segmentId,
-        color: current.color,
-        intensity: current.intensity,
-        points,
-      });
+    if (keep.length > 0) {
+      delayQueues.set(queueKey, keep);
+    } else {
+      delayQueues.delete(queueKey);
     }
   }
 
-  for (const key of ['R', 'G', 'B'] as const) {
-    receivers[key].lit = receivers[key].received >= receivers[key].threshold;
-  }
+  return released;
+}
 
+export function isGateOpenAtTick(piece: PieceInstance, tick: number): boolean {
+  const openTicks = clampGateTicks(piece.gateOpenTicks);
+  const closeTicks = clampGateTicks(piece.gateCloseTicks);
+  const period = openTicks + closeTicks;
+  const phase = ((tick - 1) % period + period) % period;
+  return phase < openTicks;
+}
+
+function evaluateVictory(level: LevelDefinition, receivers: Record<ReceiverKey, ReceiverRuntime>): boolean {
   let victory = (['R', 'G', 'B'] as const).every((key) => receivers[key].lit);
 
   if (victory && level.rules.purity) {
@@ -300,7 +224,8 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[]): 
   }
 
   if (victory && level.rules.sync) {
-    const ticks = (['R', 'G', 'B'] as const).map((key) => receivers[key].firstSatisfiedTick);
+    const targets = level.rules.syncTargets ?? (['R', 'G', 'B'] as const);
+    const ticks = targets.map((key) => receivers[key].firstSatisfiedTick);
     if (ticks.some((tick) => tick === null)) {
       victory = false;
     } else {
@@ -310,21 +235,440 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[]): 
     }
   }
 
+  if (victory && level.rules.sequence) {
+    const { order, maxGap } = level.rules.sequence;
+    let previousTick: number | null = null;
+
+    for (const key of order) {
+      const tick = receivers[key].firstSatisfiedTick;
+      if (tick === null) {
+        victory = false;
+        break;
+      }
+
+      if (previousTick !== null) {
+        const gap = tick - previousTick;
+        if (gap <= 0 || gap > maxGap) {
+          victory = false;
+          break;
+        }
+      }
+
+      previousTick = tick;
+    }
+  }
+
+  return victory;
+}
+
+export function simulateLevel(level: LevelDefinition, placements: Placement[], options?: SimOptions): SimResult {
+  const board = new Map<string, PieceInstance>();
+
+  for (const fixedPiece of level.fixed) {
+    board.set(cellKey(fixedPiece.x, fixedPiece.y), normalizePieceConfig(fixedPiece));
+  }
+
+  for (const placement of placements) {
+    board.set(cellKey(placement.x, placement.y), placementToPiece(placement));
+  }
+
+  const walls = new Set(level.walls.map((wall) => cellKey(wall.x, wall.y)));
+  const receivers = createReceiverState(level);
+  const visited = new Map<string, number>();
+  const paths = new Map<number, BeamPath>();
+  const delayQueues = new Map<string, DelayedBeam[]>();
+
+  const tickLimit = Math.min(level.rules.maxTicks, Math.max(0, options?.tickLimit ?? level.rules.maxTicks));
+
+  let beamId = 1;
+  let segmentId = 1;
+  let totalTicks = 0;
+  let elapsedTicks = 0;
+  let bounceCount = 0;
+  let leakCount = 0;
+
+  const nextBeamId = (): number => {
+    const value = beamId;
+    beamId += 1;
+    return value;
+  };
+
+  const nextSegmentId = (): number => {
+    const value = segmentId;
+    segmentId += 1;
+    return value;
+  };
+
+  const spawnBeam = (beams: RuntimeBeam[], payload: {
+    x: number;
+    y: number;
+    dir: Dir8;
+    color: ColorMask;
+    intensity: number;
+    tick: number;
+  }): void => {
+    if (payload.color === COLOR_BITS.NONE || payload.intensity <= 0) {
+      return;
+    }
+
+    const beam = createRuntimeBeam({
+      id: nextBeamId(),
+      segmentId: nextSegmentId(),
+      x: payload.x,
+      y: payload.y,
+      dir: payload.dir,
+      color: payload.color,
+      intensity: payload.intensity,
+      tick: payload.tick,
+      paths,
+    });
+
+    if (!registerVisited(visited, beam)) {
+      return;
+    }
+
+    beams.push(beam);
+  };
+
+  let activeBeams: RuntimeBeam[] = [];
+
+  for (const piece of level.fixed) {
+    if (piece.type !== 'SOURCE') {
+      continue;
+    }
+
+    spawnBeam(activeBeams, {
+      x: piece.x,
+      y: piece.y,
+      dir: piece.dir,
+      color: piece.color ?? COLOR_BITS.W,
+      intensity: piece.intensity ?? 300,
+      tick: 0,
+    });
+  }
+
+  let timelineDone = false;
+
+  while (elapsedTicks < tickLimit) {
+    if (activeBeams.length === 0 && delayQueues.size === 0) {
+      timelineDone = true;
+      break;
+    }
+
+    elapsedTicks += 1;
+    const currentTick = elapsedTicks;
+
+    const arrivals = new Map<string, RuntimeBeam[]>();
+    const nextActive: RuntimeBeam[] = [];
+
+    for (const beam of activeBeams) {
+      const dirVec = dirToVector(beam.dir);
+      const nextX = beam.x + dirVec.dx;
+      const nextY = beam.y + dirVec.dy;
+
+      totalTicks += 1;
+
+      if (!inBounds(level, nextX, nextY) || walls.has(cellKey(nextX, nextY))) {
+        registerPathPoint(paths, beam, nextX, nextY);
+        leakCount += 1;
+        continue;
+      }
+
+      registerPathPoint(paths, beam, nextX, nextY);
+      const movedBeam: RuntimeBeam = {
+        ...beam,
+        x: nextX,
+        y: nextY,
+        tick: currentTick,
+      };
+
+      const key = cellKey(nextX, nextY);
+      const list = arrivals.get(key);
+      if (list) {
+        list.push(movedBeam);
+      } else {
+        arrivals.set(key, [movedBeam]);
+      }
+    }
+
+    const released = releaseDelayedBeams(delayQueues, currentTick, nextBeamId, nextSegmentId, paths);
+    for (const beam of released) {
+      if (registerVisited(visited, beam)) {
+        nextActive.push(beam);
+      }
+    }
+
+    for (const [key, incoming] of arrivals.entries()) {
+      const [xRaw, yRaw] = key.split(',');
+      const x = Number(xRaw);
+      const y = Number(yRaw);
+      const piece = board.get(key);
+
+      if (!piece) {
+        for (const beam of incoming) {
+          if (registerVisited(visited, beam)) {
+            nextActive.push(beam);
+          }
+        }
+        continue;
+      }
+
+      if (piece.type === 'SOURCE') {
+        continue;
+      }
+
+      if (piece.type === 'RECV_R' || piece.type === 'RECV_G' || piece.type === 'RECV_B') {
+        const keyColor = RECEIVER_TYPE_TO_KEY[piece.type];
+
+        for (const beam of incoming) {
+          const channel = decomposeIntensity(beam.color, beam.intensity);
+          const accepted = channel[keyColor];
+          const rejected = beam.intensity - accepted;
+
+          if (accepted > 0) {
+            updateReceiver(receivers[keyColor], accepted, currentTick);
+          }
+
+          if (level.rules.purity) {
+            const foreign =
+              keyColor === 'R'
+                ? channel.G + channel.B
+                : keyColor === 'G'
+                  ? channel.R + channel.B
+                  : channel.R + channel.G;
+            if (foreign > 0) {
+              receivers[keyColor].contaminated = true;
+            }
+          }
+
+          if (rejected > 0) {
+            leakCount += 1;
+          }
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'FILTER_R' || piece.type === 'FILTER_G' || piece.type === 'FILTER_B') {
+        const keyColor = FILTER_TO_COLOR[piece.type];
+
+        for (const beam of incoming) {
+          const channel = decomposeIntensity(beam.color, beam.intensity);
+          const pass = channel[keyColor];
+
+          if (pass <= 0) {
+            continue;
+          }
+
+          const outputColor = keyColor === 'R' ? COLOR_BITS.R : keyColor === 'G' ? COLOR_BITS.G : COLOR_BITS.B;
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: beam.dir,
+            color: outputColor,
+            intensity: pass,
+            tick: currentTick,
+          });
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'MIRROR') {
+        for (const beam of incoming) {
+          if (bounceCount >= level.rules.maxBounces) {
+            continue;
+          }
+
+          bounceCount += 1;
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: reflectByMirrorDir(beam.dir, piece.dir),
+            color: beam.color,
+            intensity: beam.intensity,
+            tick: currentTick,
+          });
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'PRISM') {
+        for (const beam of incoming) {
+          const channel = decomposeIntensity(beam.color, beam.intensity);
+
+          if (channel.R > 0) {
+            spawnBeam(nextActive, {
+              x,
+              y,
+              dir: rotateDir(piece.dir, -1),
+              color: COLOR_BITS.R,
+              intensity: channel.R,
+              tick: currentTick,
+            });
+          }
+
+          if (channel.G > 0) {
+            spawnBeam(nextActive, {
+              x,
+              y,
+              dir: piece.dir,
+              color: COLOR_BITS.G,
+              intensity: channel.G,
+              tick: currentTick,
+            });
+          }
+
+          if (channel.B > 0) {
+            spawnBeam(nextActive, {
+              x,
+              y,
+              dir: rotateDir(piece.dir, 1),
+              color: COLOR_BITS.B,
+              intensity: channel.B,
+              tick: currentTick,
+            });
+          }
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'SPLITTER') {
+        for (const beam of incoming) {
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: piece.dir,
+            color: beam.color,
+            intensity: beam.intensity,
+            tick: currentTick,
+          });
+
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: rotateDir(piece.dir, 2),
+            color: beam.color,
+            intensity: beam.intensity,
+            tick: currentTick,
+          });
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'DELAY') {
+        const queueKey = key;
+        const queue = delayQueues.get(queueKey) ?? [];
+        const delayTicks = clampDelayTicks(piece.delayTicks);
+
+        for (const beam of incoming) {
+          if (queue.length >= DELAY_QUEUE_CAPACITY) {
+            leakCount += 1;
+            continue;
+          }
+
+          queue.push({
+            releaseTick: currentTick + delayTicks,
+            x,
+            y,
+            dir: piece.dir,
+            color: beam.color,
+            intensity: beam.intensity,
+          });
+        }
+
+        if (queue.length > 0) {
+          delayQueues.set(queueKey, queue);
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'GATE') {
+        const gateOpen = isGateOpenAtTick(piece, currentTick);
+
+        for (const beam of incoming) {
+          if (!gateOpen) {
+            leakCount += 1;
+            continue;
+          }
+
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: beam.dir,
+            color: beam.color,
+            intensity: beam.intensity,
+            tick: currentTick,
+          });
+        }
+
+        continue;
+      }
+
+      if (piece.type === 'MIXER') {
+        const usable = incoming.filter((beam) => beam.intensity > 0 && beam.color !== COLOR_BITS.NONE);
+        const uniqueDirs = new Set(usable.map((beam) => beam.dir));
+        const meetsDistinct = !piece.mixerRequireDistinct || uniqueDirs.size >= 2;
+
+        if (usable.length >= 2 && meetsDistinct) {
+          const mergedColor = usable.reduce((sum, beam) => ((sum | beam.color) & COLOR_BITS.W) as ColorMask, COLOR_BITS.NONE as ColorMask);
+          const mergedIntensity = usable.reduce((sum, beam) => sum + beam.intensity, 0);
+
+          spawnBeam(nextActive, {
+            x,
+            y,
+            dir: piece.dir,
+            color: mergedColor,
+            intensity: mergedIntensity,
+            tick: currentTick,
+          });
+        } else {
+          leakCount += usable.length;
+        }
+
+        continue;
+      }
+
+      for (const beam of incoming) {
+        if (registerVisited(visited, beam)) {
+          nextActive.push(beam);
+        }
+      }
+    }
+
+    activeBeams = nextActive;
+  }
+
+  if (!timelineDone && activeBeams.length === 0 && delayQueues.size === 0) {
+    timelineDone = true;
+  }
+
+  for (const key of ['R', 'G', 'B'] as const) {
+    receivers[key].lit = receivers[key].received >= receivers[key].threshold;
+  }
+
+  const victory = evaluateVictory(level, receivers);
+
   const solveTick = victory
-    ? Math.max(
-        receivers.R.firstSatisfiedTick ?? 0,
-        receivers.G.firstSatisfiedTick ?? 0,
-        receivers.B.firstSatisfiedTick ?? 0,
-      )
+    ? Math.max(receivers.R.firstSatisfiedTick ?? 0, receivers.G.firstSatisfiedTick ?? 0, receivers.B.firstSatisfiedTick ?? 0)
     : null;
 
+  const resolvedPaths = Array.from(paths.values()).filter((path) => path.points.length > 1);
+
   return {
-    paths,
+    paths: resolvedPaths,
     receivers,
     victory,
+    timelineDone,
     stats: {
       placedCount: placements.length,
       totalTicks,
+      elapsedTicks,
+      tickLimit,
       bounceCount,
       leakCount,
       solveTick,
@@ -333,11 +677,21 @@ export function simulateLevel(level: LevelDefinition, placements: Placement[]): 
 }
 
 export function getCombinedPieces(level: LevelDefinition, placements: Placement[]): PieceInstance[] {
-  return [...level.fixed, ...placements.map(placementToPiece)];
+  return [...level.fixed.map(normalizePieceConfig), ...placements.map(placementToPiece)];
 }
 
 export function isPlaceablePiece(type: PieceInstance['type']): boolean {
-  return type === 'PRISM' || type === 'MIRROR' || type === 'FILTER_R' || type === 'FILTER_G' || type === 'FILTER_B';
+  return (
+    type === 'PRISM' ||
+    type === 'MIRROR' ||
+    type === 'FILTER_R' ||
+    type === 'FILTER_G' ||
+    type === 'FILTER_B' ||
+    type === 'MIXER' ||
+    type === 'SPLITTER' ||
+    type === 'DELAY' ||
+    type === 'GATE'
+  );
 }
 
 export function findPieceAt(pieces: PieceInstance[], x: number, y: number): PieceInstance | undefined {
@@ -364,3 +718,4 @@ export function pieceColorMask(piece: PieceInstance): ColorMask {
   }
   return piece.color ?? COLOR_BITS.W;
 }
+

@@ -4,11 +4,16 @@ interface TopBarProps {
   levels: LevelDefinition[];
   currentLevelIndex: number;
   onChangeLevel: (index: number) => void;
+  onPrevLevel: () => void;
+  onNextLevel: () => void;
+  onOpenOverview: () => void;
   onUndo: () => void;
   onRedo: () => void;
   onReset: () => void;
   canUndo: boolean;
   canRedo: boolean;
+  canPrevLevel: boolean;
+  canNextLevel: boolean;
   victory: boolean;
   tickCount: number;
 }
@@ -26,11 +31,16 @@ export function TopBar({
   levels,
   currentLevelIndex,
   onChangeLevel,
+  onPrevLevel,
+  onNextLevel,
+  onOpenOverview,
   onUndo,
   onRedo,
   onReset,
   canUndo,
   canRedo,
+  canPrevLevel,
+  canNextLevel,
   victory,
   tickCount,
 }: TopBarProps) {
@@ -64,8 +74,17 @@ export function TopBar({
             {victory ? '所有接收器已激活' : '调试中'}
           </div>
           <div className="status-chip status-chip-idle">Ticks {tickCount}</div>
+          <div className="status-chip status-chip-idle">
+            {currentLevelIndex + 1} / {levels.length}
+          </div>
           <div className="status-chip status-chip-idle">{DIFFICULTY_LABEL[current.difficulty]}</div>
 
+          <button type="button" className="control-button" onClick={onPrevLevel} disabled={!canPrevLevel}>
+            上一关
+          </button>
+          <button type="button" className="control-button" onClick={onNextLevel} disabled={!canNextLevel}>
+            下一关
+          </button>
           <label htmlFor="level-select" className="sr-only">
             切换关卡
           </label>
@@ -91,6 +110,9 @@ export function TopBar({
           </button>
           <button type="button" className="control-button" onClick={onRedo} disabled={!canRedo}>
             Redo
+          </button>
+          <button type="button" className="control-button" onClick={onOpenOverview}>
+            Overview
           </button>
           <button type="button" className="control-button control-button-accent" onClick={onReset}>
             Reset

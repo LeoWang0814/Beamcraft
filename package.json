@@ -9,7 +9,9 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "check:levels": "tsx scripts/verify-levels.ts",
-    "check:reflection": "tsx scripts/test-reflection.ts"
+    "check:reflection": "tsx scripts/test-reflection.ts",
+    "check:hotkeys": "tsx scripts/test-hotkeys.ts",
+    "check:timing": "tsx scripts/check-timing.ts"
   },
   "dependencies": {
     "react": "^19.2.0",

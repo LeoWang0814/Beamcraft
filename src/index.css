@@ -216,6 +216,33 @@
     opacity: 0.9;
   }
 
+  .piece-chip-gate-open {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.14),
+      0 0 0 1px rgba(90, 245, 148, 0.26);
+  }
+
+  .piece-chip-gate-closed {
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      0 0 0 1px rgba(255, 93, 117, 0.22);
+  }
+
+  .piece-gate-indicator {
+    @apply absolute left-[4px] top-[4px] h-[8px] w-[8px] rounded-full border border-black/35;
+    transition: background-color 140ms ease, box-shadow 140ms ease;
+  }
+
+  .piece-gate-indicator-open {
+    background: rgba(90, 245, 148, 0.92);
+    box-shadow: 0 0 0 2px rgba(90, 245, 148, 0.24);
+  }
+
+  .piece-gate-indicator-closed {
+    background: rgba(255, 93, 117, 0.88);
+    box-shadow: 0 0 0 2px rgba(255, 93, 117, 0.22);
+  }
+
   .piece-lock {
     @apply absolute right-[4px] top-[4px] rounded px-1 py-[1px] text-[9px] text-muted;
     background: rgba(32, 32, 30, 0.94);
